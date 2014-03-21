@@ -1,0 +1,6 @@
+br.com.orlandoburli.treinamento.core.dao
+br.com.orlandoburli.treinamento.core.dao.builder
+br.com.orlandoburli.treinamento.core.dao.exceptions
+br.com.orlandoburli.treinamento.core.log
+br.com.orlandoburli.treinamento.core.vo
+br.com.orlandoburli.treinamento.core.vo.annotations
