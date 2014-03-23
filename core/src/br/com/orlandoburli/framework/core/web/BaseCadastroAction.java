@@ -138,7 +138,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 		DAOManager manager = new DAOManager();
 		try {
 			manager.begin();
-			
+
 			E vo = getNewVo();
 			G be = getNewBe(manager);
 
@@ -163,7 +163,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 	public void visualizar() {
 		DAOManager manager = new DAOManager();
-		
+
 		try {
 
 			G be = getNewBe(manager);
@@ -218,28 +218,8 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public boolean doBeforeDelete(E vo) throws DeleteBeException {
-		// Verifica se o vo tem alguma chave nula
-		// if (DaoUtils.hasNullKey(vo)) {
-		// return false;
-		// }
 		return true;
 	}
-
-	//
-	// /**
-	// * Sobreescreva este m��todo para tratar qualquer exce����o de sql na
-	// * alteracao, exclusao, inclusao ou alteracao
-	// *
-	// * @param ex
-	// * Excecao disparada
-	// */
-	// public void doBeforeWriteSqlErro(Exception e) {
-	// if (messages.size() <= 0) {
-	// writeErrorMessage(e.getMessage());
-	// } else {
-	// write(Utils.voToXml(messages));
-	// }
-	// }
 
 	/**
 	 * Sobrescrever o metodo para operacoes realizadas apos inserir um registro
