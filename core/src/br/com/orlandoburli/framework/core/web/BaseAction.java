@@ -64,6 +64,7 @@ public class BaseAction implements Serializable {
 		} catch (IllegalArgumentException e1) {
 		} catch (IllegalAccessException e1) {
 		}
+		
 	}
 
 	public Object getAttribute(String key) {

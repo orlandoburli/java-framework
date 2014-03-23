@@ -40,7 +40,7 @@ public final class Constants {
 	 * Constantes de Variaveis de sessao
 	 */
 	public final class Session {
-		public static final String SESSION_USUARIO = "usuariosessao";
+		public static final String SESSION_USUARIO = "usuario";
         public static final String SESSION_USUARIO_TEMP = "usuariotmp";
 
         public static final String SESSION_PERFIL = "perfilsessao";

@@ -16,6 +16,7 @@ import br.com.orlandoburli.framework.core.dao.annotations.Column;
 import br.com.orlandoburli.framework.core.dao.annotations.Join;
 import br.com.orlandoburli.framework.core.dao.exceptions.ColumnNotFoundException;
 import br.com.orlandoburli.framework.core.dao.exceptions.DAOException;
+import br.com.orlandoburli.framework.core.dao.exceptions.ForeignKeyNotFoundException;
 import br.com.orlandoburli.framework.core.dao.exceptions.SQLDaoException;
 import br.com.orlandoburli.framework.core.dao.exceptions.SequenceNotExistsException;
 import br.com.orlandoburli.framework.core.dao.exceptions.TableNotExistsException;
@@ -230,6 +231,12 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 		String sql = getBuilder().buildSqlSelectStatement(getVOClass(), getMaxSubJoins()) + sqlWhere.toString();
 
+		// TODO Construir um teste para este item
+		sql += "\n" + getBuilder().buildSpecialWhereConditions(getVOClass(), whereCondition);
+
+		// TODO Construir um teste para este item
+		sql += "\n" + getBuilder().buildSqlOrderByStatement(orderFields);
+
 		Log.debugsql(sql);
 
 		List<E> list = new ArrayList<E>();
@@ -264,10 +271,9 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 		return list;
 	}
-	
-	public int getPageCount(E filter, String whereCondition, int pageSize) throws DAOException{
-		
-		
+
+	public int getPageCount(E filter, String whereCondition, int pageSize) throws DAOException {
+
 		return -1;
 	}
 
@@ -822,6 +828,16 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 				getBuilder().createUniqueConstraint(getVOClass(), e.getConstraint(), getManager());
 			}
 		}
+		
+		// Checa as chaves estrangeiras
+		while (!flagOk) {
+			try {
+				getBuilder().foreignKeysCheck(getVOClass(), getManager());
+				flagOk = true;
+			} catch (ForeignKeyNotFoundException e) {
+				getBuilder().createForeignKey(getVOClass(), e.getJoin(), getManager());
+			}
+		}
 
 		addToBuffer();
 
@@ -896,7 +912,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		String tableName = getBuilder().getTablename(getVOClass());
 		BUFFER_TABELAS.add(tableName);
 	}
-	
+
 	/**
 	 * Forca a limpeza do buffer para forcar a re-checagem das tabelas.
 	 */

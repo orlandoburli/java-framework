@@ -32,7 +32,7 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 		if (getOpcao() != null && getOpcao().equalsIgnoreCase("grid")) {
 			grid();
 		} else {
-			forward(getJspConsulta());
+			 forward(getJspConsulta());
 		}
 	}
 
@@ -45,8 +45,9 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 		DAOManager manager = new DAOManager();
 		try {
 			@SuppressWarnings("unchecked")
-//			getBEClass().getConstructor(parameterTypes)
-			G be = (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) getBEClass(), manager); //(G) getBEClass().newInstance();
+			// getBEClass().getConstructor(parameterTypes)
+			G be = (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) getBEClass(), manager); // (G)
+																													// getBEClass().newInstance();
 
 			@SuppressWarnings("unchecked")
 			E filter = (E) getVOClass().newInstance();

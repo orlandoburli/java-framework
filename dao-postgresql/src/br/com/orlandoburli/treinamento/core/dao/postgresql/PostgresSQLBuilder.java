@@ -811,4 +811,36 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	}
 
+	@Override
+	public String buildSqlOrderByStatement(String orderFields) throws DAOException {
+		if (orderFields == null || orderFields.trim().equals("")) {
+			return "";
+		}
+
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("ORDER BY ");
+		sql.append(orderFields);
+		
+		return sql.toString();
+	}
+
+	@Override
+	public String buildSpecialWhereConditions(Class<BaseVo> voClass, String whereCondition) {
+		if (whereCondition == null || whereCondition.trim().equals("")) {
+			return "";
+		}
+		return " AND (" + whereCondition + ")";
+	}
+
+	@Override
+	public void foreignKeysCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void createForeignKey(Class<BaseVo> voClass, Join join, DAOManager manager) throws DAOException {
+		// TODO Auto-generated method stub
+	}
+
 }

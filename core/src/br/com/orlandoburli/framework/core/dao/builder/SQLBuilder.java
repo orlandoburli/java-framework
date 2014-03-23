@@ -30,14 +30,22 @@ public abstract class SQLBuilder {
 
 	public abstract String buildSqlSelectStatement(Class<BaseVo> classe, int maxSubJoins) throws DAOException;
 
+	public abstract String buildSqlOrderByStatement(String orderFields) throws DAOException;
+
 	public abstract void buildSqlWhereStatement(StringBuilder sqlWhere, Class<BaseVo> classe, BaseVo filter, boolean keysOnly, String prefix, DaoControle controle) throws DAOException;
+
+	public abstract String buildSpecialWhereConditions(Class<BaseVo> voClass, String whereCondition);
 
 	public abstract void tableExists(Class<BaseVo> classe, DAOManager manager) throws DAOException;
 
 	public abstract void tableCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException;
-	
+
 	public abstract void constraintsCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException;
+
+	public abstract void foreignKeysCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException;
 	
+	public abstract void createForeignKey(Class<BaseVo> voClass, Join join, DAOManager manager) throws DAOException;
+
 	public abstract void createUniqueConstraint(Class<BaseVo> classe, UniqueConstraint constraint, DAOManager manager) throws DAOException;
 
 	public abstract void alterTable(Class<BaseVo> voClass, DAOManager manager, DAOException e) throws DAOException;
@@ -99,9 +107,10 @@ public abstract class SQLBuilder {
 				return t.value();
 			}
 		}
-		
+
 		throw new TableAnnotationNotPresentException("Anotação @Table não encontrada em " + classe.getSimpleName(), classe);
-//		return null; //classe.getSimpleName().substring(0, classe.getSimpleName().length() - 2);
+		// return null; //classe.getSimpleName().substring(0,
+		// classe.getSimpleName().length() - 2);
 	}
 
 	public String getSequenceName(Class<?> classe) {
@@ -143,5 +152,6 @@ public abstract class SQLBuilder {
 	}
 
 	public abstract String getColumnDeclaration(Column column);
+
 
 }
