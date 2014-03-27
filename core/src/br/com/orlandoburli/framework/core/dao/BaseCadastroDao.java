@@ -434,8 +434,8 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 *            Objeto de controle recursivo, para evitar loops infinitos no
 	 *            caso de auto-referenciamento.
 	 * @param posicao
-	 *            Objeto de controle para controlar, recursivamente, a posicao
-	 *            do parametro de filtro.
+	 *            Objeto de controle para marcar a posicao / contador dos
+	 *            filtros setados.
 	 * @throws SQLException
 	 * @throws DAOException
 	 */
@@ -481,7 +481,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 						} else if (keysOnly) {
 							posicao.incrementaInteracoes();
 
-							Log.debugsql("Parametro SQL posicao: " + posicao + " valor: " + value);
+							Log.debugsql("Parametro SQL posicao: " + posicao.getNumeroInteracoes() + " valor: " + value);
 
 							prepared.setNull(posicao.getNumeroInteracoes(), java.sql.Types.OTHER);
 						}
