@@ -27,12 +27,14 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 	private String PesquisarPor;
 	private String ParametroPesquisa;
 
+	private DAOManager manager;
+
 	public void execute() {
 		doBeforeExecute();
 		if (getOpcao() != null && getOpcao().equalsIgnoreCase("grid")) {
 			grid();
 		} else {
-			 forward(getJspConsulta());
+			forward(getJspConsulta());
 		}
 	}
 
@@ -40,29 +42,26 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@IgnoreMethodAuthentication
 	public void grid() {
-		DAOManager manager = new DAOManager();
+		
 		try {
-			@SuppressWarnings("unchecked")
-			// getBEClass().getConstructor(parameterTypes)
-			G be = (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) getBEClass(), manager); // (G)
-																													// getBEClass().newInstance();
+			G be = (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) getBEClass(), getManager()); 
 
-			@SuppressWarnings("unchecked")
 			E filter = (E) getVOClass().newInstance();
 
 			doBeforeFilter(filter, be, getRequest(), getResponse());
 
 			try {
-				List<E> list = be.getList(filter, "", getOrderFields(), PageSize, PageNumber);
-				int pageCount = be.getPageCount(filter, "", PageSize);
+				List<E> list = be.getList(filter, "", getOrderFields(), getPageNumber(), getPageSize());
+				int pageCount = be.getPageCount(filter, "", getPageSize());
 
-				doBeforeSetList(list, pageCount, PageSize, PageNumber);
+				doBeforeSetList(list, pageCount, getPageSize(), getPageNumber());
 
 				getRequest().setAttribute("listSource", list);
-				getRequest().setAttribute("pageNumber", PageNumber);
-				getRequest().setAttribute("pageSize", PageSize);
+				getRequest().setAttribute("pageNumber", getPageNumber());
+				getRequest().setAttribute("pageSize", getPageSize());
 				getRequest().setAttribute("pageCount", pageCount);
 			} catch (ListException e) {
 				e.printStackTrace();
@@ -81,7 +80,7 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		} finally {
-			manager.commit();
+			getManager().commit();
 		}
 	}
 
@@ -147,5 +146,16 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 
 	public void setParametroPesquisa(String parametroPesquisa) {
 		ParametroPesquisa = parametroPesquisa;
+	}
+
+	public DAOManager getManager() {
+		if (manager == null) {
+			manager = new DAOManager();
+		}
+		return manager;
+	}
+
+	public void setManager(DAOManager manager) {
+		this.manager = manager;
 	}
 }

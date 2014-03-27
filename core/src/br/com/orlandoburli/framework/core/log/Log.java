@@ -38,7 +38,7 @@ public final class Log {
 		int linha = 3;
 		int levelMin = Integer.parseInt(System.getProperty("log.level"));
 
-		if (level.getLevel() >= levelMin) {
+		if (level.getLevel() <= levelMin) {
 			Calendar cal = Calendar.getInstance();
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss:SSS");
 			System.out.println(sdf.format(cal.getTime()) + "| " + stackTrace[linha].getClassName() + " (" + stackTrace[linha].getLineNumber() + ") |" + level.getLevel() + "|" + level.getDescription() + "|" + message);

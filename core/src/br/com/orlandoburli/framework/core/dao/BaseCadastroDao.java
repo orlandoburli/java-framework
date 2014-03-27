@@ -184,7 +184,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 *            pesquisa. Nao permite parametros.
 	 * @param orderFields
 	 *            Nomes dos Fields pelos quais a consulta sera ordenada.
-	 * @param pageStart
+	 * @param pageNumber
 	 *            Numero da pagina de dados aonde a consulta se inicia. Nulo se
 	 *            nao utilizar paginacao, caso contrario deve ser maior que
 	 *            zero.
@@ -194,8 +194,8 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 * @return List do tipo <b>E</b>.
 	 * @throws DAOException
 	 */
-	public List<E> getList(E filter, String whereCondition, String orderFields, Integer pageStart, Integer pageSize) throws DAOException {
-		return getList(filter, whereCondition, orderFields, pageStart, pageSize, false);
+	public List<E> getList(E filter, String whereCondition, String orderFields, Integer pageNumber, Integer pageSize) throws DAOException {
+		return getList(filter, whereCondition, orderFields, pageNumber, pageSize, false);
 	}
 
 	/**
@@ -216,11 +216,11 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 * @throws DAOException
 	 */
 	@SuppressWarnings("unchecked")
-	private List<E> getList(E filter, String whereCondition, String orderFields, Integer pageStart, Integer pageSize, boolean keysOnly) throws DAOException {
+	private List<E> getList(E filter, String whereCondition, String orderFields, Integer pageNumber, Integer pageSize, boolean keysOnly) throws DAOException {
 
 		// TODO Implementar whereCondition;
 		// TODO Implementar orderFields;
-		// TODO Implementar pageStart;
+		// TODO Implementar pageNumber;
 		// TODO Implementar pageSize;
 
 		checkTable();
@@ -236,6 +236,9 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 		// TODO Construir um teste para este item
 		sql += "\n" + getBuilder().buildSqlOrderByStatement(orderFields);
+
+		// TODO Construir um teste para este item
+		sql += "\n" + getBuilder().buildSqlLimit(sql, pageNumber, pageSize);
 
 		Log.debugsql(sql);
 
@@ -273,8 +276,48 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	}
 
 	public int getPageCount(E filter, String whereCondition, int pageSize) throws DAOException {
+		// TODO Escrever um teste para este metodo
+		checkTable();
 
-		return -1;
+		StringBuilder sqlWhere = new StringBuilder();
+
+		getBuilder().buildSqlWhereStatement(sqlWhere, getVOClass(), filter, false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()));
+
+		String sql = getBuilder().buildSqlCountStatement(getVOClass(), getMaxSubJoins()) + sqlWhere.toString();
+
+		// TODO Construir um teste para este item
+		sql += "\n" + getBuilder().buildSpecialWhereConditions(getVOClass(), whereCondition);
+
+		Log.debugsql(sql);
+
+		try {
+			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+
+			setSelectWhereParameters(prepared, filter, getVOClass(), false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
+
+			ResultSet result = prepared.executeQuery();
+
+			int count = -1;
+
+			while (result.next()) {
+				// Este select so retorna 1 resultado, inteiro.
+				count = result.getInt(1);
+			}
+
+			result.close();
+
+			int inteiro = count / pageSize;
+			int resto = count % pageSize;
+			inteiro += (resto > 0) ? 1 : 0;
+
+			return inteiro;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			Log.critical(e);
+			throw new SQLDaoException("Erro ao buscar paginas da lista", e);
+		}
+
 	}
 
 	/**
@@ -437,7 +480,6 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 							}
 						} else if (keysOnly) {
 							posicao.incrementaInteracoes();
-							;
 
 							Log.debugsql("Parametro SQL posicao: " + posicao + " valor: " + value);
 
@@ -828,7 +870,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 				getBuilder().createUniqueConstraint(getVOClass(), e.getConstraint(), getManager());
 			}
 		}
-		
+
 		// Checa as chaves estrangeiras
 		while (!flagOk) {
 			try {

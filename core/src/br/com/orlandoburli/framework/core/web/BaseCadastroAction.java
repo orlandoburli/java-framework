@@ -37,6 +37,8 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 	private String term;
 
+	private DAOManager manager;
+
 	protected Class<?> getDAOClass() {
 		return ((Class<?>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[1]);
 	}
@@ -73,33 +75,31 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public void inserir() {
-		DAOManager manager = new DAOManager();
-
 		E vo = getNewVo();
-		G be = getNewBe(manager);
+		G be = getNewBe(getManager());
 
 		try {
-			manager.begin();
+			getManager().begin();
 
 			injectVo(vo);
 
-			doBeforeInserir(vo, manager);
-			doBeforeSave(vo, manager);
+			doBeforeInserir(vo, getManager());
+			doBeforeSave(vo, getManager());
 
 			be.save(vo);
 
-			doAfterInserir(vo, manager);
-			doAfterSalvar(vo, manager);
+			doAfterInserir(vo, getManager());
+			doAfterSalvar(vo, getManager());
 
-			manager.commit();
+			getManager().commit();
 
 			write(new Gson().toJson(new RetornoAction(true, "Registro inserido com sucesso!")));
 
 		} catch (BeException e) {
-			manager.rollback();
+			getManager().rollback();
 			write(new Gson().toJson(new RetornoAction(false, e.getMessage())));
 		} finally {
-			manager.commit();
+			getManager().commit();
 		}
 	}
 
@@ -343,5 +343,16 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 	public void setTerm(String term) {
 		this.term = term;
+	}
+
+	public DAOManager getManager() {
+		if (manager == null) {
+			manager = new DAOManager();
+		}
+		return manager;
+	}
+
+	public void setManager(DAOManager manager) {
+		this.manager = manager;
 	}
 }

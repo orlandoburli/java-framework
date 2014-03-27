@@ -132,6 +132,27 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		return sql.toString();
 	}
 
+	@Override
+	public String buildSqlCountStatement(Class<BaseVo> classe, int maxSubJoins) throws DAOException {
+		StringBuilder sql = new StringBuilder();
+		sql.append("\n SELECT");
+
+		String tablename = getTablename(classe);
+
+		sql.append("\n     COUNT(1)");
+
+		sql.append("\n\n   FROM " + tablename);
+
+		// Loop dos Joins Encontrados
+		List<String> buff = new ArrayList<String>();
+		
+		Field[] fields = classe.getDeclaredFields();
+
+		buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
+
+		return sql.toString();
+	}
+
 	@SuppressWarnings("unchecked")
 	public void buildSelectFields(Class<BaseVo> classe, StringBuilder sql, Field[] fields, String prefix, DaoControle controle) throws DAOException {
 		for (Field f : fields) {
@@ -476,6 +497,16 @@ public class PostgresSQLBuilder extends SQLBuilder {
 							if (!f.getType().equals(Calendar.class)) {
 								throw new WrongFieldException("Field " + f.getName() + " do tipo errado, esperado: " + Calendar.class.getName() + ", encontrado: " + f.getType().getName() + ", dataType: " + column.dataType(), classe, column);
 							}
+						} else if (column.dataType() == DataType.TEXT) {
+							if (dataType != java.sql.Types.VARCHAR) {
+								throw new WrongColumnException("Coluna " + columnName + " da tabela " + tablename + " do tipo errado! VO: " + column.dataType() + ", BD: " + dataType, classe, column, f);
+							}
+
+							// Checa o tipo de dados do VO, se é compativel com
+							// o tipo de dados da coluna
+							if (!f.getType().equals(String.class)) {
+								throw new WrongFieldException("Field " + f.getName() + " do tipo errado, esperado: " + String.class.getName() + ", encontrado: " + f.getType().getName() + ", dataType: " + column.dataType(), classe, column);
+							}
 						}
 
 						// Checa a opcao Nullable
@@ -572,6 +603,8 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			columnType = "INTEGER";
 		} else if (column.dataType() == DataType.NUMERIC) {
 			columnType = "NUMERIC";
+		} else if (column.dataType() == DataType.TEXT) {
+			columnType = "TEXT";
 		}
 
 		if (column.maxSize() > 0) {
@@ -818,10 +851,10 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		}
 
 		StringBuilder sql = new StringBuilder();
-		
+
 		sql.append("ORDER BY ");
 		sql.append(orderFields);
-		
+
 		return sql.toString();
 	}
 
@@ -841,6 +874,14 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	@Override
 	public void createForeignKey(Class<BaseVo> voClass, Join join, DAOManager manager) throws DAOException {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public String buildSqlLimit(String sql, Integer pageNumber, Integer pageSize) {
+		if (pageSize != null && pageSize > 0 && pageNumber != null && pageNumber > 0) {
+			return " LIMIT " + pageSize + " OFFSET " + pageSize * (pageNumber - 1);
+		}
+		return "";
 	}
 
 }

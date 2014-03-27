@@ -29,12 +29,16 @@ public abstract class SQLBuilder {
 	public abstract String buildSqlDeleteStatement(Class<BaseVo> classe) throws DAOException;
 
 	public abstract String buildSqlSelectStatement(Class<BaseVo> classe, int maxSubJoins) throws DAOException;
+	
+	public abstract String buildSqlCountStatement(Class<BaseVo> classe, int maxSubJoins) throws DAOException;
 
 	public abstract String buildSqlOrderByStatement(String orderFields) throws DAOException;
 
 	public abstract void buildSqlWhereStatement(StringBuilder sqlWhere, Class<BaseVo> classe, BaseVo filter, boolean keysOnly, String prefix, DaoControle controle) throws DAOException;
 
 	public abstract String buildSpecialWhereConditions(Class<BaseVo> voClass, String whereCondition);
+	
+	public abstract String buildSqlLimit(String sql, Integer pageNumber, Integer pageSize);
 
 	public abstract void tableExists(Class<BaseVo> classe, DAOManager manager) throws DAOException;
 
@@ -43,7 +47,7 @@ public abstract class SQLBuilder {
 	public abstract void constraintsCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException;
 
 	public abstract void foreignKeysCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException;
-	
+
 	public abstract void createForeignKey(Class<BaseVo> voClass, Join join, DAOManager manager) throws DAOException;
 
 	public abstract void createUniqueConstraint(Class<BaseVo> classe, UniqueConstraint constraint, DAOManager manager) throws DAOException;
@@ -152,6 +156,5 @@ public abstract class SQLBuilder {
 	}
 
 	public abstract String getColumnDeclaration(Column column);
-
 
 }

@@ -131,7 +131,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	 *            filtro <b>filter</b>.
 	 * @param orderFields
 	 *            Fields pelo qual ordenar os resultados.
-	 * @param pageStart
+	 * @param pageNumber
 	 *            Numero da pagina de dados aonde a consulta se inicia. Nulo se
 	 *            nao utilizar paginacao, caso contrario deve ser maior que
 	 *            zero.
@@ -141,12 +141,12 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	 * @return Lista dos objetos encontrados com as condicoes.
 	 * @throws ListException
 	 */
-	public List<E> getList(E filter, String whereCondition, String orderFields, Integer pageStart, Integer pageSize) throws ListException {
+	public List<E> getList(E filter, String whereCondition, String orderFields, Integer pageNumber, Integer pageSize) throws ListException {
 
 		F dao = getNewDao();
 
 		try {
-			return dao.getList(filter, whereCondition, orderFields, pageStart, pageSize);
+			return dao.getList(filter, whereCondition, orderFields, pageNumber, pageSize);
 		} catch (DAOException e) {
 			Log.critical(e);
 			throw new ListException("Erro ao retornar dados. Consulte o suporte do sistema.");

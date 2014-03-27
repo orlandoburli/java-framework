@@ -84,7 +84,7 @@ public class BaseAction implements Serializable {
 	}
 
 	/**
-	 * Escreve na sa??????da usando o encoding ISO-8859-1
+	 * Escreve na saida usando o encoding ISO-8859-1
 	 * 
 	 * @param value
 	 */
