@@ -48,7 +48,7 @@ public abstract class SQLBuilder {
 
 	public abstract void foreignKeysCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException;
 
-	public abstract void createForeignKey(Class<BaseVo> voClass, Join join, DAOManager manager) throws DAOException;
+	public abstract void createForeignKey(Class<BaseVo> voClass, Join join,  Field field, DAOManager manager) throws DAOException;
 
 	public abstract void createUniqueConstraint(Class<BaseVo> classe, UniqueConstraint constraint, DAOManager manager) throws DAOException;
 

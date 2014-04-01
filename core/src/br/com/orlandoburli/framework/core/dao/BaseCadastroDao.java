@@ -65,7 +65,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 			prepared.execute();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Log.critical(e);
 			throw new SQLDaoException("Erro ao executar insert no banco", e);
 		}
 
@@ -94,7 +94,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 			prepared.execute();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Log.critical(e);
 			throw new SQLDaoException("Erro ao executar update no banco", e);
 		}
 	}
@@ -122,7 +122,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 			prepared.execute();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Log.critical(e);
 			throw new SQLDaoException("Erro ao executar delete no banco", e);
 		}
 	}
@@ -267,7 +267,6 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 			result.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
 			Log.critical(e);
 			throw new SQLDaoException("Erro ao buscar lista", e);
 		}
@@ -313,7 +312,6 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 			return inteiro;
 
 		} catch (SQLException e) {
-			e.printStackTrace();
 			Log.critical(e);
 			throw new SQLDaoException("Erro ao buscar paginas da lista", e);
 		}
@@ -342,7 +340,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 				return retorno;
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			Log.critical(e);
 			throw new SQLDaoException("Erro ao buscar valor de sequence", e);
 		}
 
@@ -835,7 +833,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 			try {
 				getBuilder().createSequence(getVOClass(), getManager());
 			} catch (DAOException e1) {
-				e1.printStackTrace();
+				Log.critical(e1);
 			}
 		}
 
@@ -872,12 +870,14 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		}
 
 		// Checa as chaves estrangeiras
+		flagOk = false;
+		
 		while (!flagOk) {
 			try {
 				getBuilder().foreignKeysCheck(getVOClass(), getManager());
 				flagOk = true;
 			} catch (ForeignKeyNotFoundException e) {
-				getBuilder().createForeignKey(getVOClass(), e.getJoin(), getManager());
+				getBuilder().createForeignKey(getVOClass(), e.getJoin(), e.getField(), getManager());
 			}
 		}
 

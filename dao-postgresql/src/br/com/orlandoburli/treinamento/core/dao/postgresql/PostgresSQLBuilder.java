@@ -23,6 +23,7 @@ import br.com.orlandoburli.framework.core.dao.annotations.UniqueConstraint;
 import br.com.orlandoburli.framework.core.dao.builder.SQLBuilder;
 import br.com.orlandoburli.framework.core.dao.exceptions.ColumnNotFoundException;
 import br.com.orlandoburli.framework.core.dao.exceptions.DAOException;
+import br.com.orlandoburli.framework.core.dao.exceptions.ForeignKeyNotFoundException;
 import br.com.orlandoburli.framework.core.dao.exceptions.SQLDaoException;
 import br.com.orlandoburli.framework.core.dao.exceptions.SequenceNotExistsException;
 import br.com.orlandoburli.framework.core.dao.exceptions.StatementNotExecutedException;
@@ -145,7 +146,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 		// Loop dos Joins Encontrados
 		List<String> buff = new ArrayList<String>();
-		
+
 		Field[] fields = classe.getDeclaredFields();
 
 		buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
@@ -784,8 +785,6 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			if (constraints != null) {
 				for (UniqueConstraint constraint : constraints) {
 
-					Log.info("Constraint : " + constraint.constraintName());
-
 					ResultSet result = manager.getConnection().getMetaData().getIndexInfo(null, null, getTablename(classe), true, true);
 
 					boolean found = false;
@@ -812,7 +811,6 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void createUniqueConstraint(Class<BaseVo> classe, UniqueConstraint constraint, DAOManager manager) throws DAOException {
-		// TODO Auto-generated method stub
 		Table table = classe.getAnnotation(Table.class);
 
 		if (table == null) {
@@ -868,12 +866,102 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void foreignKeysCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		// TODO Auto-generated method stub
+		// TODO Check das constraints / foreign keys
+		try {
+
+			Field[] fields = classe.getDeclaredFields();
+
+			for (Field f : fields) {
+				Join join = f.getAnnotation(Join.class);
+				if (join != null) {
+
+					String tableName = getTablename(classe);
+
+					String tableRemote = getTableNameRemote(f, join);
+
+					String constraintName = getForeignKeyName(classe, join, f);
+
+					String sql = "SELECT * FROM information_schema.table_constraints tc WHERE table_name = ? AND constraint_type = 'FOREIGN KEY' AND constraint_name = ?";
+
+					Log.debugsql(sql);
+
+					PreparedStatement prepared = manager.getConnection().prepareStatement(sql);
+					prepared.setString(1, tableName);
+					prepared.setString(2, constraintName);
+
+					ResultSet result = prepared.executeQuery();
+
+					if (!result.next()) {
+						result.close();
+						// Se estiver vazio, dispara exception
+						throw new ForeignKeyNotFoundException("Foreign key " + constraintName + " nao encontrada na tabela " + tableName + " com a tabela " + tableRemote, classe, join, f);
+					}
+
+					result.close();
+
+					// TODO 2 Passo - Checa os campos do relacionamento
+				}
+			}
+
+		} catch (SQLException e) {
+			Log.critical(e);
+			throw new SQLDaoException("Erro ao buscar metadados de constraints", e);
+		}
+	}
+
+	private String getTableNameRemote(Field f, Join join) throws DAOException {
+		String tableRemote = join.tableRemote();
+
+		if (tableRemote == null || tableRemote.trim().equals("")) {
+			tableRemote = getTablename(f.getType());
+		}
+		return tableRemote;
+	}
+
+	private String getForeignKeyName(Class<BaseVo> classe, Join join, Field field) throws DAOException {
+		String fk = "fk_";
+
+		fk += getTablename(classe);
+		fk += "_";
+		fk += getTableNameRemote(field, join);
+
+		return fk;
 	}
 
 	@Override
-	public void createForeignKey(Class<BaseVo> voClass, Join join, DAOManager manager) throws DAOException {
-		// TODO Auto-generated method stub
+	public void createForeignKey(Class<BaseVo> voClass, Join join, Field field, DAOManager manager) throws DAOException {
+		// TODO Criar chave estrangeira
+
+		String sql = "ALTER TABLE " + getTablename(voClass) + " ADD CONSTRAINT " + getForeignKeyName(voClass, join, field);
+		sql += "  FOREIGN KEY (";
+
+		for (String columnLocal : join.columnsLocal()) {
+			sql += columnLocal + ", ";
+		}
+
+		// Tira a ultima virgula e espaco
+		sql = sql.substring(0, sql.length() - 2);
+
+		sql += ") REFERENCES " + getTableNameRemote(field, join) + " (";
+
+		for (String columnRemote : join.columnsRemote()) {
+			sql += columnRemote + ", ";
+		}
+
+		// Tira a ultima virgula e espaco
+		sql = sql.substring(0, sql.length() - 2);
+
+		sql += ")";
+		
+		Log.debugsql(sql);
+		
+		try {
+			PreparedStatement prepared = manager.getConnection().prepareStatement(sql);
+			prepared.execute();
+		} catch (SQLException e) {
+			Log.critical(e);
+			throw new SQLDaoException("Erro ao criar foreign key!", e);
+		}
 	}
 
 	@Override
