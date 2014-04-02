@@ -1,5 +1,8 @@
 package br.com.orlandoburli.framework.core.vo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import br.com.orlandoburli.framework.core.vo.exceptions.WrongDomainException;
 
 public abstract class BaseDomain {
@@ -30,7 +33,7 @@ public abstract class BaseDomain {
 
 	public String getDescription(String value) {
 		String[] values = getValues();
-		
+
 		for (int i = 0; i < values.length; i++) {
 			if (values[i].equals(value)) {
 				return getDescriptions()[i];
@@ -38,5 +41,15 @@ public abstract class BaseDomain {
 		}
 
 		return null;
+	}
+
+	public List<BaseVo> getList() {
+		List<BaseVo> list = new ArrayList<BaseVo>();
+
+		for (int i = 0; i < getValues().length; i++) {
+			list.add(new DomainVo(getValues()[i], getDescriptions()[i]));
+		}
+
+		return list;
 	}
 }
