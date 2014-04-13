@@ -625,6 +625,10 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		} else if (columnSize > 0) {
 			columnType += " (" + columnSize + ") ";
 		}
+		
+		if (column.defaultValue() != null && !column.defaultValue().trim().equals("")) {
+			columnType += " DEFAULT " + column.defaultValue();
+		}
 
 		return columnType;
 	}

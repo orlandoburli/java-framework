@@ -73,4 +73,10 @@ public @interface Column {
 	 * @return Nome da sequence
 	 */
 	String sequenceName() default "";
+	
+	/**
+	 * Valor default para a coluna, caso ela seja not null.
+	 * @return Valor default
+	 */
+	String defaultValue() default "";
 }

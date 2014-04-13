@@ -150,7 +150,7 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 
 	public DAOManager getManager() {
 		if (manager == null) {
-			manager = new DAOManager();
+			manager = DAOManager.getDAOManager();
 		}
 		return manager;
 	}

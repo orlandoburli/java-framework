@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import br.com.orlandoburli.framework.core.vo.BaseVo;
 
@@ -67,6 +69,12 @@ public final class Utils {
 			}
 		}
 		return files;
+	}
+
+	public static String removeAcentos(String str) {
+		str = Normalizer.normalize(str, Normalizer.Form.NFD);
+		str = str.replaceAll("[^\\p{ASCII}]", "");
+		return str;
 	}
 
 	public static String voToJson(Object obj) {
@@ -447,6 +455,30 @@ public final class Utils {
 	public static Date calendarToDate(Calendar calendar) {
 		Date date = new Date(calendar.getTime().getTime());
 		return date;
+	}
+
+	public static String geraCadeiaString(int tamanho) {
+		String[] carct = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
+		String cadeia = "";
+
+		for (int x = 0; x < tamanho; x++) {
+			int j = (int) (Math.random() * carct.length);
+			cadeia += carct[j];
+		}
+
+		return cadeia;
+	}
+	
+	public static String getUrl2(HttpServletRequest req) {
+		String url = req.getRequestURI();
+		String path = req.getServletContext().getContextPath();
+		
+		url = url.replace(path, "");
+		
+		if (url.startsWith("/")) {
+			url = url.substring(1);
+		}
+		return url;
 	}
 
 }

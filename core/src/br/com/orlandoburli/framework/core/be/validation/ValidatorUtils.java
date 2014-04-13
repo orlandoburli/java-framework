@@ -4,11 +4,14 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 import br.com.orlandoburli.framework.core.be.exceptions.BeException;
+import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.FilterOnly;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.FullTrim;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.Lower;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.MD5;
+import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.NoAccents;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.NoSpace;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.Precision;
+import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.SpaceToUnderline;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.TransformateWhen;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.Upper;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.ZeroIfNull;
@@ -20,11 +23,14 @@ import br.com.orlandoburli.framework.core.be.validation.annotations.validators.N
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.NotNegative;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.NotNull;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.NotZero;
+import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.FilterOnlyTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.FullTrimTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.LowerTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.MD5Transformation;
+import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.NoAccentsTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.NoSpaceTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.PrecisionTransformation;
+import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.SpaceToUnderlineTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.UpperTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.ZeroIfNullTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.DomainValidator;
@@ -172,6 +178,21 @@ public final class ValidatorUtils {
 					ZeroIfNull zeroIfNull = (ZeroIfNull) a;
 					if (zeroIfNull != null && zeroIfNull.when() == when) {
 						new ZeroIfNullTransformation().transform(vo, f, classe);
+					}
+				} else if (a instanceof FilterOnly) {
+					FilterOnly filterOnly = (FilterOnly) a;
+					if (filterOnly != null && filterOnly.when() == when) {
+						new FilterOnlyTransformation().transform(vo, f, classe);
+					}
+				} else if (a instanceof NoAccents) {
+					NoAccents noAccents = (NoAccents) a;
+					if (noAccents != null && noAccents.when() == when) {
+						new NoAccentsTransformation().transform(vo, f, classe);
+					}
+				} else if (a instanceof SpaceToUnderline) {
+					SpaceToUnderline spaceToUnderline = (SpaceToUnderline) a;
+					if (spaceToUnderline != null && spaceToUnderline.when() == when) {
+						new SpaceToUnderlineTransformation().transform(vo, f, classe);
 					}
 				}
 			}

@@ -43,8 +43,8 @@ public abstract class BaseDomain {
 		return null;
 	}
 
-	public List<BaseVo> getList() {
-		List<BaseVo> list = new ArrayList<BaseVo>();
+	public List<DomainVo> getList() {
+		List<DomainVo> list = new ArrayList<DomainVo>();
 
 		for (int i = 0; i < getValues().length; i++) {
 			list.add(new DomainVo(getValues()[i], getDescriptions()[i]));

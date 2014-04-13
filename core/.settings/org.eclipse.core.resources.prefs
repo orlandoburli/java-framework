@@ -9,6 +9,7 @@ encoding//src/br/com/orlandoburli/framework/core/be/validation/implementation/va
 encoding//src/br/com/orlandoburli/framework/core/be/validation/implementation/validators/NotNullValidator.java=UTF-8
 encoding//src/br/com/orlandoburli/framework/core/be/validation/implementation/validators/NotZeroValidator.java=UTF-8
 encoding//src/br/com/orlandoburli/framework/core/dao/BaseCadastroDao.java=UTF-8
+encoding//src/br/com/orlandoburli/framework/core/dao/DAOManager.java=UTF-8
 encoding//src/br/com/orlandoburli/framework/core/dao/annotations/Column.java=UTF-8
 encoding//src/br/com/orlandoburli/framework/core/dao/annotations/Join.java=UTF-8
 encoding//src/br/com/orlandoburli/framework/core/dao/annotations/Table.java=UTF-8

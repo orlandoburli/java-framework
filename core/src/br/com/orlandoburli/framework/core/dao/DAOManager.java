@@ -3,6 +3,9 @@ package br.com.orlandoburli.framework.core.dao;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -12,13 +15,72 @@ import br.com.orlandoburli.framework.core.log.Log;
 
 public class DAOManager {
 
+	protected static List<DAOManager> pool = new ArrayList<DAOManager>();
+
+	static {
+		// Thread para verificar o tempo de vida do Daomanager, e se nao tem
+		// conexoes abertas
+		DAOManagerThread thread = new DAOManagerThread();
+		thread.start();
+	}
+
+	public static DAOManager getDAOManager() {
+		DAOManager daoManager = new DAOManager();
+
+		pool.add(daoManager);
+
+		return daoManager;
+	}
+
 	private Connection connection;
+	private Calendar aliveTime;
 
-	public DAOManager() {
+	private boolean dead = false;
 
+	private DAOManager() {
+		alive();
+	}
+
+	private void alive() {
+		if (isDead()) {
+			throw new RuntimeException("Class DAOManager está MORTA!");
+		}
+		this.aliveTime = Calendar.getInstance();
+	}
+
+	/**
+	 * Verifica se o manager ja passou do tempo de "expirar".
+	 * 
+	 * @return manager expirado
+	 */
+	protected boolean isExpired() {
+		long now = Calendar.getInstance().getTimeInMillis() / 60 / 1000;
+		long alive = aliveTime.getTimeInMillis() / 60 / 1000;
+		
+		long difference = now - alive;
+		
+		int maxTimeOut = Integer.parseInt(System.getProperty("dao.manager.thread.timeout"));
+		
+		// Se a diferenca for maior que maxTimeOut, quer dizer que esta inativo a (maxTimeOut) minutos.
+		// Neste caso, a execucao deve morrer.
+		if (difference > maxTimeOut) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Metodo que "Mata" o DAOManager, para que ninguem mais o use
+	 */
+	protected void die() {
+		rollback();
+		this.setDead(true);
 	}
 
 	public void begin() {
+		alive();
+
 		if (this.connection == null) {
 			try {
 				this.connection = getNewConnection();
@@ -33,6 +95,7 @@ public class DAOManager {
 	}
 
 	public void commit() {
+		alive();
 		if (connection != null) {
 			try {
 				if (System.getProperty("debug.sql").equals("true")) {
@@ -48,6 +111,7 @@ public class DAOManager {
 	}
 
 	public void rollback() {
+		alive();
 		if (connection != null) {
 			try {
 				if (System.getProperty("debug.sql").equals("true")) {
@@ -61,8 +125,9 @@ public class DAOManager {
 			}
 		}
 	}
-	
+
 	public void savepoint() {
+		alive();
 		try {
 			connection.setSavepoint();
 		} catch (SQLException e) {
@@ -71,7 +136,8 @@ public class DAOManager {
 	}
 
 	private Connection getNewConnection() throws ClassNotFoundException, SQLException, NamingException {
-		
+		alive();
+
 		if (System.getProperty("db.type").equalsIgnoreCase("datasource")) {
 			Log.debugsql("NEW CONNECTION - DATA SOURCE");
 
@@ -102,7 +168,17 @@ public class DAOManager {
 	}
 
 	public Connection getConnection() {
+		alive();
+
 		begin();
 		return this.connection;
+	}
+
+	public boolean isDead() {
+		return dead;
+	}
+
+	private void setDead(boolean dead) {
+		this.dead = dead;
 	}
 }

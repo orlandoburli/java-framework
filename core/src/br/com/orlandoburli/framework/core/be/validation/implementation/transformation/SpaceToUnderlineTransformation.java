@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import br.com.orlandoburli.framework.core.dao.DaoUtils;
 import br.com.orlandoburli.framework.core.vo.BaseVo;
 
-public class LowerTransformation extends BaseTransformation {
+public class SpaceToUnderlineTransformation extends BaseTransformation {
 
 	@Override
 	public void transform(BaseVo vo, Field f, Class<BaseVo> classe) {
@@ -23,13 +23,15 @@ public class LowerTransformation extends BaseTransformation {
 
 		// Se o valor do field for Null, sai do metodo.
 		if (value != null) {
-			
 			String string = (String) value;
 
-			string = string.toLowerCase();
+			while (string.indexOf(" ") >= 0) {
+				string = string.replace(" ", "_");
+			}
 
 			// Salva o novo valor.
 			DaoUtils.setValue(DaoUtils.getSetterMethod(classe, f), vo, string);
 		}
 	}
+
 }

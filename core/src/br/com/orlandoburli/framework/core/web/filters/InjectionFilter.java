@@ -6,6 +6,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Currency;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -190,6 +191,20 @@ public class InjectionFilter extends BaseFilter {
 					Boolean bolval = Boolean.parseBoolean(value.toString());
 					field.set(container, bolval);
 				} catch (Exception ex) {
+				}
+			} else if (field.getType().equals(Calendar.class)) {
+				try {
+					if (value != null && value.toString().trim().length() == 10) {
+						SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+						Calendar cal = Calendar.getInstance();
+						cal.setTimeInMillis(sdf.parse(value.toString()).getTime());
+						field.set(container, cal);
+					} else {
+						field.set(container, null);
+					}
+				} catch (Exception ex) {
+					// Nao conseguiu setar... passa reto
+					// ex.printStackTrace();
 				}
 			} else if (field.getType().equals(Date.class)) {
 				try {

@@ -104,7 +104,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public void alterar() {
-		DAOManager manager = new DAOManager();
+		DAOManager manager = DAOManager.getDAOManager();
 		try {
 			manager.begin();
 
@@ -135,7 +135,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public void excluir() {
-		DAOManager manager = new DAOManager();
+		DAOManager manager = DAOManager.getDAOManager();
 		try {
 			manager.begin();
 
@@ -162,7 +162,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public void visualizar() {
-		DAOManager manager = new DAOManager();
+		DAOManager manager = DAOManager.getDAOManager();
 
 		try {
 
@@ -347,7 +347,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 	public DAOManager getManager() {
 		if (manager == null) {
-			manager = new DAOManager();
+			manager = DAOManager.getDAOManager();
 		}
 		return manager;
 	}
