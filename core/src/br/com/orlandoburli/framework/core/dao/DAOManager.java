@@ -26,16 +26,24 @@ public class DAOManager {
 
 	public static DAOManager getDAOManager() {
 		DAOManager daoManager = new DAOManager();
+		
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		int linha = 2;
+		
+		daoManager.setStackElement(stackTrace[linha]);
 
 		pool.add(daoManager);
 
 		return daoManager;
 	}
 
+
 	private Connection connection;
 	private Calendar aliveTime;
 
 	private boolean dead = false;
+
+	private StackTraceElement stackElement;
 
 	private DAOManager() {
 		alive();
@@ -180,5 +188,13 @@ public class DAOManager {
 
 	private void setDead(boolean dead) {
 		this.dead = dead;
+	}
+
+	public StackTraceElement getStackElement() {
+		return stackElement;
+	}
+
+	private void setStackElement(StackTraceElement stackElement) {
+		this.stackElement = stackElement;
 	}
 }

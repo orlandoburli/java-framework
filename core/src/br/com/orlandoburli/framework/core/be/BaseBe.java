@@ -198,7 +198,17 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 			Log.critical(e);
 			throw new ListException("Erro ao retornar dados. Consulte o suporte do sistema.");
 		}
+	}
+	
+	public int getListCount(E filter, String whereCondition) throws ListException {
+		F dao = getNewDao();
 
+		try {
+			return dao.getListCount(filter, whereCondition);
+		} catch (DAOException e) {
+			Log.critical(e);
+			throw new ListException("Erro ao retornar dados. Consulte o suporte do sistema.");
+		}
 	}
 
 	public void doBeforeSave(E vo) throws BeException {

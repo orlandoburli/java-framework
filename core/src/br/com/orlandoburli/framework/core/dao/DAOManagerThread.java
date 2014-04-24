@@ -34,17 +34,16 @@ public class DAOManagerThread extends Thread {
 	}
 
 	private synchronized void processa() {
-		Log.fine("Inicio checagem do DAOManager");
+		Log.fine("Inicio checagem do DAOManager - " + DAOManager.pool.size() + " objetos no pool");
 
 		DAOManager[] array = DAOManager.pool.toArray(new DAOManager[0]);
 
 		for (DAOManager m : array) {
 
-			Log.fine("Iterando DAOManager...");
-
 			if (m.isExpired()) {
 
 				Log.debug("DAOManager expirado, expurgando...");
+				Log.debug("Caller do DAOManager: " + m.getStackElement().getClassName() + "(" + m.getStackElement().getLineNumber() + ")");
 
 				m.die();
 

@@ -887,8 +887,6 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 					String sql = "SELECT * FROM information_schema.table_constraints tc WHERE table_name = ? AND constraint_type = 'FOREIGN KEY' AND constraint_name = ?";
 
-					Log.debugsql(sql);
-
 					PreparedStatement prepared = manager.getConnection().prepareStatement(sql);
 					prepared.setString(1, tableName);
 					prepared.setString(2, constraintName);

@@ -149,9 +149,9 @@ public class DaoUtils {
 	 */
 	public static void setValue(Method setter, Object vo, Object value) {
 		try {
-			Log.fine("Class: " + vo.getClass() + " Setter: " + setter.getName() + " Value: " + value);
 			setter.invoke(vo, value);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			Log.fine("Class: " + vo.getClass() + " Setter: " + setter.getName() + " Value: " + value);
 			Log.error(e);
 		}
 	}

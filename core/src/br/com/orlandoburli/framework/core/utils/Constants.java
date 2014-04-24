@@ -50,6 +50,8 @@ public final class Constants {
         
 		public static final String SESSION_PERMISSAO_OBJETOS = "permissoesobjetos";
 		public static final String SESSION_PERMISSAO_ACAO_OBJETOS = "permissoesacoesobjetos";
+		public static final String CARRINHO = "carrinho";
+		public static final String CLIENTE = "cliente";
 	}
 	
 	/**
@@ -57,5 +59,9 @@ public final class Constants {
 	 */
 	public final class Parameters {
 		public static final String PATH_ARQUIVOS = "PATH_ARQUIVOS";
+		public static final String APP_ID_FACEBOOK = "APP_ID_FACEBOOK";
+		public static final String SECRET_ID_FACEBOOK = "SECRET_ID_FACEBOOK";
+		public static final String EMAIL_PAGSEGURO = "EMAIL_PAGSEGURO";
+		public static final String CHAVE_PAGSEGURO = "CHAVE_PAGSEGURO";
 	}
 }

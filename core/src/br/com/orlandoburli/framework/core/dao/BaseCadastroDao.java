@@ -317,6 +317,46 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		}
 
 	}
+	
+	public int getListCount(E filter, String whereCondition) throws DAOException {
+		// TODO Escrever um teste para este metodo
+		checkTable();
+
+		StringBuilder sqlWhere = new StringBuilder();
+
+		getBuilder().buildSqlWhereStatement(sqlWhere, getVOClass(), filter, false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()));
+
+		String sql = getBuilder().buildSqlCountStatement(getVOClass(), getMaxSubJoins()) + sqlWhere.toString();
+
+		// TODO Construir um teste para este item
+		sql += "\n" + getBuilder().buildSpecialWhereConditions(getVOClass(), whereCondition);
+
+		Log.debugsql(sql);
+
+		try {
+			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+
+			setSelectWhereParameters(prepared, filter, getVOClass(), false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
+
+			ResultSet result = prepared.executeQuery();
+
+			int count = -1;
+
+			while (result.next()) {
+				// Este select so retorna 1 resultado, inteiro.
+				count = result.getInt(1);
+			}
+
+			result.close();
+
+			return count;
+
+		} catch (SQLException e) {
+			Log.critical(e);
+			throw new SQLDaoException("Erro ao buscar quantidade da lista", e);
+		}
+
+	}
 
 	/**
 	 * Retorna o proximo valor da sequence.
