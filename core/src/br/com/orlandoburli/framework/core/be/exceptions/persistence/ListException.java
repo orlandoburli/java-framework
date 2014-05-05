@@ -9,5 +9,9 @@ public class ListException extends BeException {
 	public ListException(String message) {
 		super(message);
 	}
+	
+	public ListException() {
+		super("Erro ao retornar dados. Consulte o administrador do sistema.");
+	}
 
 }

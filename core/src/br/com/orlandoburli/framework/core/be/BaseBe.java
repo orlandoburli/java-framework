@@ -121,6 +121,26 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	}
 
 	/**
+	 * Retorna um objeto do banco de dados.
+	 * 
+	 * @param key
+	 *            Id do objeto a ser retornado.
+	 * @return Objeto vo preenchido com os dados do banco de dados, se
+	 *         encontrado.
+	 * @throws ListException
+	 */
+	public E get(Object key) throws ListException {
+		F dao = getNewDao();
+
+		try {
+			return dao.get(key);
+		} catch (DAOException e) {
+			Log.critical(e);
+			throw new ListException("Erro ao retornar dados. Consulte o suporte do sistema.");
+		}
+	}
+
+	/**
 	 * Retorna uma lista de objetos do banco de dados.
 	 * 
 	 * @param filter
@@ -199,7 +219,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 			throw new ListException("Erro ao retornar dados. Consulte o suporte do sistema.");
 		}
 	}
-	
+
 	public int getListCount(E filter, String whereCondition) throws ListException {
 		F dao = getNewDao();
 

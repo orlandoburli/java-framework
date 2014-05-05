@@ -63,5 +63,12 @@ public final class Constants {
 		public static final String SECRET_ID_FACEBOOK = "SECRET_ID_FACEBOOK";
 		public static final String EMAIL_PAGSEGURO = "EMAIL_PAGSEGURO";
 		public static final String CHAVE_PAGSEGURO = "CHAVE_PAGSEGURO";
+		
+		
+		public static final String SMTP_HOST = "SMTP_HOST";
+		public static final String SMTP_PORT = "SMTP_PORT";
+		public static final String SMTP_USER = "SMTP_USER";
+		public static final String SMTP_PASSWORD = "SMTP_PASSWORD";
+		public static final String SMTP_SSL = "SMTP_SSL";
 	}
 }

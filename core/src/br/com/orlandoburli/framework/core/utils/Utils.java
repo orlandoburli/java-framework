@@ -8,8 +8,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.Normalizer;
@@ -468,17 +471,44 @@ public final class Utils {
 
 		return cadeia;
 	}
-	
+
 	public static String getUrl2(HttpServletRequest req) {
 		String url = req.getRequestURI();
 		String path = req.getServletContext().getContextPath();
-		
+
 		url = url.replace(path, "");
-		
+
 		if (url.startsWith("/")) {
 			url = url.substring(1);
 		}
 		return url;
+	}
+
+	public static String md5(String value) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			byte[] thedigest = md.digest(value.getBytes());
+			return new String(thedigest).toUpperCase();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public static String toSHA1(String valor) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA");
+			md.update(valor.getBytes());
+			BigInteger hash = new BigInteger(1, md.digest());
+			String novoValor = hash.toString(16);
+
+			return novoValor;
+
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

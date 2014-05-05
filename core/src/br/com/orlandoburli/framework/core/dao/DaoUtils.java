@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import br.com.orlandoburli.framework.core.be.BaseBe;
+import br.com.orlandoburli.framework.core.dao.annotations.Column;
 import br.com.orlandoburli.framework.core.log.Log;
 import br.com.orlandoburli.framework.core.vo.BaseVo;
 
@@ -27,6 +28,27 @@ public class DaoUtils {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Seta o valor do campo que for o ID.
+	 * 
+	 * @param classe
+	 *            Classe VO que recebera o ID
+	 * @param vo
+	 *            Objeto vo que recebera o ID
+	 * @param id
+	 *            Valor do ID
+	 */
+	public static void setValueId(Class<?> classe, Object vo, Object id) {
+		for (Field f : classe.getDeclaredFields()) {
+			Column c = f.getAnnotation(Column.class);
+
+			if (c != null && c.isKey()) {
+				DaoUtils.setValue(DaoUtils.getSetterMethod(classe, f), vo, id);
+				return;
+			}
+		}
 	}
 
 	/**
@@ -80,7 +102,7 @@ public class DaoUtils {
 	 *            Field que se quer o getter
 	 * @return Objeto Method (java.lang.reflect)
 	 */
-	public static Method getGetterMethod(Class<BaseVo> classe, Field f) {
+	public static Method getGetterMethod(Class<?> classe, Field f) {
 		String fieldName = f.getName();
 		String methodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 

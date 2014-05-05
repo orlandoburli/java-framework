@@ -8,11 +8,13 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import br.com.orlandoburli.framework.core.dao.annotations.Column;
+import br.com.orlandoburli.framework.core.dao.annotations.DataType;
 import br.com.orlandoburli.framework.core.dao.annotations.Join;
 import br.com.orlandoburli.framework.core.dao.exceptions.ColumnNotFoundException;
 import br.com.orlandoburli.framework.core.dao.exceptions.DAOException;
@@ -132,12 +134,38 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 * 
 	 * @param vo
 	 *            Objeto com os parametros (chave) a serem buscados.
-	 * @return Objeto VO preenchido.
+	 * @return Objeto VO preenchido, se encontrado.
 	 * @throws DAOException
 	 */
 	public E get(E vo) throws DAOException {
 
 		List<E> list = getList(vo, null, null, null, null, true);
+
+		if (list.size() == 1) {
+			return list.get(0);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Retorna um objeto do banco de dados pela sua chave (Só funciona quando o
+	 * item tem id único,não funciona em chaves compostas).
+	 * 
+	 * @param Chave
+	 *            do registro.
+	 * 
+	 * @return Objeto VO preenchido, se encontrado.
+	 * @throws DAOException
+	 */
+	public E get(Object key) throws DAOException {
+
+		@SuppressWarnings("unchecked")
+		E filter = (E) DaoUtils.getNewObject(getVOClass());
+
+		DaoUtils.setValueId(getVOClass(), filter, key);
+
+		List<E> list = getList(filter, null, null, null, null, true);
 
 		if (list.size() == 1) {
 			return list.get(0);
@@ -153,7 +181,6 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 * @throws DAOException
 	 */
 	public List<E> getList() throws DAOException {
-
 		return getList(null, null, null, null, null, false);
 	}
 
@@ -317,7 +344,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		}
 
 	}
-	
+
 	public int getListCount(E filter, String whereCondition) throws DAOException {
 		// TODO Escrever um teste para este metodo
 		checkTable();
@@ -435,8 +462,13 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 							prepared.setString(posicao, (String) value);
 						} else if (f.getType().equals(Calendar.class)) {
 							if (value != null) {
-								Date date = new Date(((Calendar) value).getTime().getTime());
-								prepared.setDate(posicao, date);
+								if (c.dataType() == DataType.DATE) {
+									Date date = new Date(((Calendar) value).getTime().getTime());
+									prepared.setDate(posicao, date);
+								} else if (c.dataType() == DataType.DATETIME) {
+									Timestamp t = new Timestamp(((Calendar) value).getTimeInMillis());
+									prepared.setTimestamp(posicao, t);
+								}
 							}
 						} else if (f.getType().equals(BigDecimal.class)) {
 							prepared.setBigDecimal(posicao, (BigDecimal) value);
@@ -509,8 +541,15 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 							} else if (f.getType().equals(String.class)) {
 								prepared.setString(posicao.getNumeroInteracoes(), (String) value);
 							} else if (f.getType().equals(Calendar.class)) {
-								Date date = new Date(((Calendar) value).getTime().getTime());
-								prepared.setDate(posicao.getNumeroInteracoes(), date);
+								if (value != null) {
+									if (c.dataType() == DataType.DATE) {
+										Date date = new Date(((Calendar) value).getTime().getTime());
+										prepared.setDate(posicao.getNumeroInteracoes(), date);
+									} else if (c.dataType() == DataType.DATETIME) {
+										Timestamp t = new Timestamp(((Calendar) value).getTimeInMillis());
+										prepared.setTimestamp(posicao.getNumeroInteracoes(), t);
+									}
+								}
 							} else {
 								// Demais tipos, Date, Calendar, BigDecimal,
 								// etc...
@@ -583,8 +622,15 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 						} else if (f.getType().equals(String.class)) {
 							prepared.setString(posicao, (String) value);
 						} else if (f.getType().equals(Calendar.class)) {
-							Date date = new Date(((Calendar) value).getTime().getTime());
-							prepared.setDate(posicao, date);
+							if (value != null) {
+								if (c.dataType() == DataType.DATE) {
+									Date date = new Date(((Calendar) value).getTime().getTime());
+									prepared.setDate(posicao, date);
+								} else if (c.dataType() == DataType.DATETIME) {
+									Timestamp t = new Timestamp(((Calendar) value).getTimeInMillis());
+									prepared.setTimestamp(posicao, t);
+								}
+							}
 						} else if (f.getType().equals(BigDecimal.class)) {
 							prepared.setBigDecimal(posicao, (BigDecimal) value);
 						} else {
@@ -677,8 +723,15 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 						} else if (f.getType().equals(String.class)) {
 							prepared.setString(posicao, (String) value);
 						} else if (f.getType().equals(Calendar.class)) {
-							Date date = new Date(((Calendar) value).getTime().getTime());
-							prepared.setDate(posicao, date);
+							if (value != null) {
+								if (c.dataType() == DataType.DATE) {
+									Date date = new Date(((Calendar) value).getTime().getTime());
+									prepared.setDate(posicao, date);
+								} else if (c.dataType() == DataType.DATETIME) {
+									Timestamp t = new Timestamp(((Calendar) value).getTimeInMillis());
+									prepared.setTimestamp(posicao, t);
+								}
+							}
 						} else {
 							// Demais tipos, Date, Calendar, BigDecimal,
 							// etc...
@@ -725,20 +778,35 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 					// Log.info("Column Name : " + columnName);
 
 					if (f.getType().equals(Calendar.class)) {
-						// Tratamento especial para o tipo Calendar - Converte
-						// de java.sql.Date para java.util.Calendar
-						Date date = null;
-						try {
-							date = result.getDate(columnName);
-						} catch (SQLException e) {
-							Log.warning(e.getMessage());
-						}
+						if (c.dataType() == DataType.DATETIME) {
+							Timestamp t = null;
+							try {
+								t = result.getTimestamp(columnName);
+							} catch (SQLException e) {
+								e.printStackTrace();
+							}
 
-						if (date != null) {
-							Calendar cal = Calendar.getInstance();
-							cal.setTimeInMillis(date.getTime());
+							if (t != null) {
+								Calendar cal = Calendar.getInstance();
+								cal.setTimeInMillis(t.getTime());
 
-							DaoUtils.setValue(setter, vo, cal);
+								DaoUtils.setValue(setter, vo, cal);
+							}
+
+						} else {
+							Date date = null;
+							try {
+								date = result.getDate(columnName);
+							} catch (SQLException e) {
+								Log.warning(e.getMessage());
+							}
+
+							if (date != null) {
+								Calendar cal = Calendar.getInstance();
+								cal.setTimeInMillis(date.getTime());
+
+								DaoUtils.setValue(setter, vo, cal);
+							}
 						}
 					} else {
 						try {
@@ -911,7 +979,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 		// Checa as chaves estrangeiras
 		flagOk = false;
-		
+
 		while (!flagOk) {
 			try {
 				getBuilder().foreignKeysCheck(getVOClass(), getManager());
