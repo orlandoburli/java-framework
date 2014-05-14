@@ -24,6 +24,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.bind.DatatypeConverter;
 
 import br.com.orlandoburli.framework.core.vo.BaseVo;
 
@@ -509,6 +510,16 @@ public final class Utils {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public static String toBase64(String valor) {
+		return DatatypeConverter.printBase64Binary(valor.getBytes());
+	}
+
+	public static String fromBase64(String valor) {
+		byte[] parseBase64Binary = DatatypeConverter.parseBase64Binary(valor);
+
+		return new String(parseBase64Binary);
 	}
 
 }
