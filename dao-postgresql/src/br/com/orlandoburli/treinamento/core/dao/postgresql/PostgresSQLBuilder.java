@@ -18,6 +18,7 @@ import br.com.orlandoburli.framework.core.dao.annotations.Column;
 import br.com.orlandoburli.framework.core.dao.annotations.DataType;
 import br.com.orlandoburli.framework.core.dao.annotations.Join;
 import br.com.orlandoburli.framework.core.dao.annotations.JoinType;
+import br.com.orlandoburli.framework.core.dao.annotations.JoinWhen;
 import br.com.orlandoburli.framework.core.dao.annotations.Table;
 import br.com.orlandoburli.framework.core.dao.annotations.UniqueConstraint;
 import br.com.orlandoburli.framework.core.dao.builder.SQLBuilder;
@@ -164,7 +165,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 				String prefixColumn = prefix + "_";
 
 				sql.append("\n        " + prefix + "." + this.getColumnName(f) + " AS " + prefixColumn + this.getColumnName(f) + ", ");
-			} else if (join != null) {
+			} else if (join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
 					// Se o field for do tipo VO, ira fazer select de todas as
@@ -200,7 +201,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		for (Field f : fields) {
 			Join join = getJoin(f);
 
-			if (join != null) {
+			if (join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 				String tableJoin = null;
 
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
@@ -302,7 +303,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 				// Filtro recursivo
 				Join join = f.getAnnotation(Join.class);
 
-				if (!keysOnly && join != null) {
+				if (!keysOnly && join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 					Method getter = DaoUtils.getGetterMethod(classe, f);
 
 					Object value = null;

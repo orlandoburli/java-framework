@@ -146,7 +146,14 @@ public class InjectionFilter extends BaseFilter {
 				}
 			} else if (field.getType().equals(double.class) || field.getType().equals(Double.class) || field.getType().equals(BigDecimal.class)) {
 				try {
-					if (value != null && value.toString().replace("R$", "").trim().length() > 0) {
+					String valorString = value.toString().replace("R$", "").trim();
+					
+					// Elimina os pontos (separador de decimais)
+					valorString = valorString.replace(".", "");
+					// Substitui as virgulas por pontos
+					valorString = valorString.replace(",", ".");
+					
+					if (value != null && valorString.length() > 0) {
 						Precision precision = field.getAnnotation(Precision.class);
 						String mascara = "#,";
 						if (precision != null) {
@@ -168,13 +175,13 @@ public class InjectionFilter extends BaseFilter {
 								// new
 								// BigDecimal(formater.parse(value.toString(),
 								// new ParsePosition(0)));
-								BigDecimal valor = (BigDecimal) formater.parse(value.toString().replace("R$", "").trim());
+								BigDecimal valor = (BigDecimal) formater.parse(valorString);
 								if (precision != null) {
 									valor = valor.setScale(precision.value(), BigDecimal.ROUND_CEILING);
 								}
 								field.set(container, valor);
 							} else {
-								Double doubleval = formater.parse(value.toString().replace("R$", "").trim()).doubleValue();
+								Double doubleval = formater.parse(valorString).doubleValue();
 								field.set(container, doubleval);
 							}
 						}

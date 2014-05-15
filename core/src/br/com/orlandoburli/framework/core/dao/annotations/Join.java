@@ -56,7 +56,7 @@ public @interface Join {
 	 * 
 	 * @return Momento do Join.
 	 */
-	JoinWhen joinWhen() default JoinWhen.REQUESTED;
+	JoinWhen joinWhen() default JoinWhen.ALWAYS;
 
 	/**
 	 * Nome da coluna remota que se fara o Join. No caso de um objeto VO
