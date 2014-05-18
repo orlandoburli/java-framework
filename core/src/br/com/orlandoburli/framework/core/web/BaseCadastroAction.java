@@ -191,7 +191,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 		}
 	}
 
-	private void injectVo(E vo) {
+	public void injectVo(E vo) {
 		InjectionFilter filter = new InjectionFilter();
 		filter.setContext(getContext());
 		filter.setRequest(getRequest());
@@ -333,7 +333,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 		return getVOClass().getSimpleName().replace("Vo", "").toLowerCase();
 	}
 
-	private String getVoSessionId() {
+	public String getVoSessionId() {
 		return getNomeEntidade() + "_cadastro_vo";
 	}
 

@@ -4,10 +4,9 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Currency;
 import java.util.Enumeration;
 import java.util.Locale;
 
@@ -147,41 +146,44 @@ public class InjectionFilter extends BaseFilter {
 			} else if (field.getType().equals(double.class) || field.getType().equals(Double.class) || field.getType().equals(BigDecimal.class)) {
 				try {
 					String valorString = value.toString().replace("R$", "").trim();
-					
+
 					// Elimina os pontos (separador de decimais)
 					valorString = valorString.replace(".", "");
 					// Substitui as virgulas por pontos
 					valorString = valorString.replace(",", ".");
-					
+
 					if (value != null && valorString.length() > 0) {
 						Precision precision = field.getAnnotation(Precision.class);
-						String mascara = "#,";
-						if (precision != null) {
-							for (int i = 0; i < precision.value(); i++) {
-								mascara += "0";
-							}
-						} else {
-							mascara += "00";
-						}
+						// String mascara = "#,";
+						// if (precision != null) {
+						// for (int i = 0; i < precision.value(); i++) {
+						// mascara += "0";
+						// }
+						// } else {
+						// mascara += "00";
+						// }
 
-						DecimalFormat formater = new DecimalFormat(mascara);
-						formater.setCurrency(Currency.getInstance(new Locale("pt", "BR")));
+//						DecimalFormat formater = new DecimalFormat();
+//						NumberFormat formater = NumberFormat.getCurrencyInstance(Locale.US);
+						// formater.setCurrency(Currency.getInstance(new
+						// Locale("pt", "BR")));
 
 						if (value instanceof BigDecimal) {
 							field.set(container, value);
 						} else {
 							if (field.getType().equals(BigDecimal.class)) {
-								formater.setParseBigDecimal(true);
+//								formater.setParseBigDecimal(true);
 								// new
 								// BigDecimal(formater.parse(value.toString(),
 								// new ParsePosition(0)));
-								BigDecimal valor = (BigDecimal) formater.parse(valorString);
+//								BigDecimal valor = (BigDecimal) formater.parse(valorString);
+								BigDecimal valor = new BigDecimal(valorString);
 								if (precision != null) {
 									valor = valor.setScale(precision.value(), BigDecimal.ROUND_CEILING);
 								}
 								field.set(container, valor);
 							} else {
-								Double doubleval = formater.parse(valorString).doubleValue();
+								Double doubleval = NumberFormat.getCurrencyInstance(Locale.US).parse(valorString).doubleValue();
 								field.set(container, doubleval);
 							}
 						}
