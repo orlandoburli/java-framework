@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 
 import br.com.orlandoburli.framework.core.be.BaseBe;
 import br.com.orlandoburli.framework.core.dao.annotations.Column;
@@ -172,8 +173,12 @@ public class DaoUtils {
 	public static void setValue(Method setter, Object vo, Object value) {
 		try {
 			setter.invoke(vo, value);
-		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			Log.fine("Class: " + vo.getClass() + " Setter: " + setter.getName() + " Value: " + value);
+		} catch (IllegalArgumentException e) {
+			if (value instanceof BigDecimal) {
+				setValue(setter, vo, ((BigDecimal) value).intValue());
+			}
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			Log.fine("Class: " + vo.getClass() + " Setter: " + setter.getName() + " Value: " + value + " Value Type: " + value.getClass());
 			Log.error(e);
 		}
 	}
