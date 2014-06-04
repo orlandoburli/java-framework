@@ -17,6 +17,8 @@ import java.lang.annotation.Target;
  */
 public @interface FilterOnly {
 
+	public static final String NUMEROS = "1234567890";
+	
 	/**
 	 * Cadeia de char's permitidos.
 	 * @return Cadeia de char's.

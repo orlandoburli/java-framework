@@ -513,6 +513,9 @@ public final class Utils {
 	}
 
 	public static String toBase64(String valor) {
+		if (valor == null) {
+			valor = "";
+		}
 		return DatatypeConverter.printBase64Binary(valor.getBytes());
 	}
 

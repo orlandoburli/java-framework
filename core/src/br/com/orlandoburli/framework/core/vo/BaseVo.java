@@ -16,4 +16,7 @@ public abstract class BaseVo {
 		this.isNew = isNew;
 	}
 
+	public String getVoName() {
+		return this.getClass().getSimpleName();
+	}
 }

@@ -71,5 +71,6 @@ public final class Constants {
 		public static final String SMTP_USER = "SMTP_USER";
 		public static final String SMTP_PASSWORD = "SMTP_PASSWORD";
 		public static final String SMTP_SSL = "SMTP_SSL";
+		public static final String PATH_LUCENE = "PATH_LUCENE";
 	}
 }
