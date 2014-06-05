@@ -238,7 +238,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	public void doBeforeUpdate(E vo) throws UpdateBeException {
 	}
 
-	public void doBeforeInsert(E vo) throws InsertBeException {
+	public void doBeforeInsert(E vo) throws BeException {
 	}
 
 	public void doBeforeDelete(E vo) throws DeleteBeException {
