@@ -25,7 +25,7 @@ public class NotEmptyValidator extends BaseValidator {
 			String string = value.toString();
 
 			if (string.trim().equals("")) {
-				throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " é obrigatório!");
+				throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " é obrigatório!", f.getName());
 			}
 		}
 	}

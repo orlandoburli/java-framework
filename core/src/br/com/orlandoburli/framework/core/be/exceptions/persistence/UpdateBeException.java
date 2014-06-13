@@ -4,8 +4,8 @@ public class UpdateBeException extends SaveBeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public UpdateBeException(String message) {
-		super(message);
+	public UpdateBeException(String message, String field) {
+		super(message, field);
 	}
 
 }

@@ -41,7 +41,7 @@ public class MinSizeValidator extends BaseValidator {
 	}
 
 	private void excecao(Field f, MinSize minSize, int length) throws ValidationBeException {
-		throw new ValidationBeException("O Tamanho mínimo do campo " + ValidatorUtils.getFieldDescription(f) + " é de " + minSize.value() + ". Informado: " + length);
+		throw new ValidationBeException("O Tamanho mínimo do campo " + ValidatorUtils.getFieldDescription(f) + " é de " + minSize.value() + ". Informado: " + length, f.getName());
 	}
 
 }

@@ -37,21 +37,40 @@ public class DomainValidator extends BaseValidator {
 			return;
 		}
 
-		if (f.getType().equals(String.class)) {
-			String string = (String) DaoUtils.getValue(DaoUtils.getGetterMethod(classe, f), vo);
+		Object valorAtributo = DaoUtils.getValue(DaoUtils.getGetterMethod(classe, f), vo);
+		if (valorAtributo != null) {
+			if (f.getType().equals(String.class)) {
+				String string = (String) valorAtributo;
 
-			domain.getValues();
+				domain.getValues();
 
-			if (!domain.isInDomain(string)) {
-				String camposPermitidos = "";
+				if (!domain.isInDomain(string)) {
+					String camposPermitidos = "";
 
-				for (String s : domain.getValues()) {
-					camposPermitidos += s + ", ";
+					for (String s : domain.getValues()) {
+						camposPermitidos += s + ", ";
+					}
+
+					camposPermitidos = camposPermitidos.substring(0, camposPermitidos.length() - 2);
+
+					throw new ValidationBeException("Valor '" + string + "' não permitido em " + ValidatorUtils.getFieldDescription(f) + "! Valores permitidos são " + camposPermitidos + ".", f.getName());
 				}
+			} else if (f.getType().equals(Integer.class)) {
+				Integer valorInt = (Integer) valorAtributo;
 
-				camposPermitidos = camposPermitidos.substring(0, camposPermitidos.length() - 2);
+				domain.getValues();
 
-				throw new ValidationBeException("Valor '" + string + "' não permitido em " + ValidatorUtils.getFieldDescription(f) + "! Valores permitidos são " + camposPermitidos + ".");
+				if (!domain.isInDomain(valorInt.toString())) {
+					String camposPermitidos = "";
+
+					for (String s : domain.getValues()) {
+						camposPermitidos += s + ", ";
+					}
+
+					camposPermitidos = camposPermitidos.substring(0, camposPermitidos.length() - 2);
+
+					throw new ValidationBeException("Valor '" + valorInt + "' não permitido em " + ValidatorUtils.getFieldDescription(f) + "! Valores permitidos são " + camposPermitidos + ".", f.getName());
+				}
 			}
 		}
 	}

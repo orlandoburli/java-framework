@@ -39,6 +39,6 @@ public class NotZeroValidator extends BaseValidator {
 	}
 
 	private void excecao(Field f) throws ValidationBeException {
-		throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " é obrigatório e deve ser maior que zero!");
+		throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " é obrigatório e deve ser maior que zero!", f.getName());
 	}
 }

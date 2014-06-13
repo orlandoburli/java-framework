@@ -70,9 +70,9 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 		return (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) getBEClass(), manager);
 	}
 
-	public boolean doBeforeSave(E vo, DAOManager manager) {
-		return true;
-	}
+//	public boolean doBeforeSave(E vo, DAOManager manager) {
+//		return true;
+//	}
 
 	public void inserir() {
 		E vo = getNewVo();
@@ -84,7 +84,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 			injectVo(vo);
 
 			doBeforeInserir(vo, getManager());
-			doBeforeSave(vo, getManager());
+			doBeforeSalvar(vo, getManager());
 
 			be.save(vo);
 
@@ -97,7 +97,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 		} catch (BeException e) {
 			getManager().rollback();
-			write(new Gson().toJson(new RetornoAction(false, e.getMessage())));
+			write(new Gson().toJson(new RetornoAction(false, e.getMessage(), e.getField())));
 		} finally {
 			getManager().commit();
 		}
@@ -128,7 +128,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 		} catch (BeException e) {
 			manager.rollback();
-			write(new Gson().toJson(new RetornoAction(false, e.getMessage())));
+			write(new Gson().toJson(new RetornoAction(false, e.getMessage(), e.getField())));
 		} finally {
 			manager.commit();
 		}
@@ -155,7 +155,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 			manager.commit();
 		} catch (DeleteBeException e) {
 			manager.rollback();
-			write(new Gson().toJson(new RetornoAction(false, e.getMessage(), null)));
+			write(new Gson().toJson(new RetornoAction(false, e.getMessage(), e.getField())));
 		} finally {
 			manager.commit();
 		}
@@ -185,7 +185,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 			forward(getJspCadastro());
 
 		} catch (ListException e) {
-			new Gson().toJson(new RetornoAction(false, e.getMessage(), null));
+			new Gson().toJson(new RetornoAction(false, e.getMessage(), e.getField()));
 		} finally {
 			manager.commit();
 		}

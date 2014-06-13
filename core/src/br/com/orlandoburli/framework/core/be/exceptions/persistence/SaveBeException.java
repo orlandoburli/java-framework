@@ -7,7 +7,11 @@ public class SaveBeException extends BeException {
 	private static final long serialVersionUID = 1L;
 
 	public SaveBeException(String message) {
-		super(message);
+		super(message, null);
+	}
+	
+	public SaveBeException(String message, String campo) {
+		super(message, campo);
 	}
 
 }

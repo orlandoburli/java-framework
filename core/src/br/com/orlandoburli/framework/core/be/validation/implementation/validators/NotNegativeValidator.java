@@ -38,6 +38,6 @@ public class NotNegativeValidator extends BaseValidator {
 	}
 
 	private void excecao(Field f) throws ValidationBeException {
-		throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " não deve ser negativo!");
+		throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " não deve ser negativo!", f.getName());
 	}
 }

@@ -2,6 +2,8 @@ package br.com.orlandoburli.framework.core.vo;
 
 public class DomainVo extends BaseVo {
 
+	private static final long serialVersionUID = 1L;
+
 	private String valor;
 	private String descricao;
 

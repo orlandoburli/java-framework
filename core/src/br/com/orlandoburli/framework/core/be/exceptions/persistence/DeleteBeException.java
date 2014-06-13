@@ -6,8 +6,8 @@ public class DeleteBeException extends BeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public DeleteBeException(String message) {
-		super(message);
+	public DeleteBeException(String message, String field) {
+		super(message, field);
 	}
 
 }

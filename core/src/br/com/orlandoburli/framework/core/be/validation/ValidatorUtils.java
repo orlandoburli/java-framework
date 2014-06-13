@@ -15,6 +15,8 @@ import br.com.orlandoburli.framework.core.be.validation.annotations.transformati
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.TransformateWhen;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.Upper;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.ZeroIfNull;
+import br.com.orlandoburli.framework.core.be.validation.annotations.validators.Cnpj;
+import br.com.orlandoburli.framework.core.be.validation.annotations.validators.Cpf;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.Domain;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.Email;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.MaxSize;
@@ -33,6 +35,8 @@ import br.com.orlandoburli.framework.core.be.validation.implementation.transform
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.SpaceToUnderlineTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.UpperTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.ZeroIfNullTransformation;
+import br.com.orlandoburli.framework.core.be.validation.implementation.validators.CnpjValidator;
+import br.com.orlandoburli.framework.core.be.validation.implementation.validators.CpfValidator;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.DomainValidator;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.EmailValidator;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.MaxSizeValidator;
@@ -92,6 +96,10 @@ public final class ValidatorUtils {
 					new NotNegativeValidator().validate(vo, f, classe);
 				} else if (a instanceof Domain) {
 					new DomainValidator().validate(vo, f, classe);
+				} else if (a instanceof Cpf) {
+					new CpfValidator().validate(vo, f, classe);
+				} else if (a instanceof Cnpj) {
+					new CnpjValidator().validate(vo, f, classe);
 				}
 			}
 		}

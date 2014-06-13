@@ -38,44 +38,48 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	 * @throws BeException
 	 */
 	public E save(E vo) throws BeException {
-		doBeforeSave(vo);
 
-		boolean isNew = vo.isNew();
+		synchronized (this) {
 
-		if (isNew) {
-			doBeforeInsert(vo);
-		} else {
-			doBeforeUpdate(vo);
-		}
+			boolean isNew = vo.isNew();
 
-		F dao = getNewDao();
-
-		try {
 			if (isNew) {
-				dao.inserir(vo);
+				doBeforeInsert(vo);
 			} else {
-				dao.update(vo);
+				doBeforeUpdate(vo);
 			}
-		} catch (DAOException e) {
-			e.printStackTrace();
+
+			doBeforeSave(vo);
+
+			F dao = getNewDao();
+
+			try {
+				if (isNew) {
+					dao.inserir(vo);
+				} else {
+					dao.update(vo);
+				}
+			} catch (DAOException e) {
+				e.printStackTrace();
+				if (isNew) {
+					throw new InsertBeException("Erro ao inserir registro, consulte o administrador do sistema.", null);
+				} else {
+					throw new UpdateBeException("Erro ao atualizar registro, consulte o administrador do sistema.", null);
+				}
+			}
+
 			if (isNew) {
-				throw new InsertBeException("Erro ao inserir registro, consulte o administrador do sistema.");
+				doAfterInsert(vo);
 			} else {
-				throw new UpdateBeException("Erro ao atualizar registro, consulte o administrador do sistema.");
+				doAfterUpdate(vo);
 			}
+
+			doAfterSave(vo);
+
+			vo.setNew(false);
+
+			return vo;
 		}
-
-		doAfterSave(vo);
-
-		if (isNew) {
-			doAfterInsert(vo);
-		} else {
-			doAfterUpdate(vo);
-		}
-
-		vo.setNew(false);
-
-		return vo;
 	}
 
 	/**
@@ -94,7 +98,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 			dao.delete(vo);
 		} catch (DAOException e) {
 			e.printStackTrace();
-			throw new DeleteBeException("Erro ao remover registro, consulte o administrador do sistema.");
+			throw new DeleteBeException("Erro ao remover registro, consulte o administrador do sistema.", null);
 		}
 
 		doAfterDelete(vo);
@@ -235,7 +239,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 		ValidatorUtils.validate(vo);
 	}
 
-	public void doBeforeUpdate(E vo) throws UpdateBeException {
+	public void doBeforeUpdate(E vo) throws BeException {
 	}
 
 	public void doBeforeInsert(E vo) throws BeException {

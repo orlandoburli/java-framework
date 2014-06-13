@@ -15,7 +15,7 @@ public class NotNullValidator extends BaseValidator {
 		Object value = DaoUtils.getValue(DaoUtils.getGetterMethod(classe, f), vo);
 
 		if (value == null) {
-			throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " é obrigatório!");
+			throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " é obrigatório!", f.getName());
 		}
 	}
 }

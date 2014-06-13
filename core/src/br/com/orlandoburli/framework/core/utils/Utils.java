@@ -16,6 +16,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.Normalizer;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -241,6 +243,24 @@ public final class Utils {
 		Calendar cal = Calendar.getInstance();
 		Timestamp time = new Timestamp(cal.getTimeInMillis());
 		return time;
+	}
+
+	public static Calendar toCalendar(String date) {
+		return toCalendar(date, "dd/MM/yyyy");
+	}
+
+	public static Calendar toCalendar(String date, String format) {
+		Calendar cal = Calendar.getInstance();
+
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		try {
+			java.util.Date parse = sdf.parse(date);
+			cal.setTime(parse);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		return cal;
 	}
 
 	public static Double getDiffDays(Date data1, Date data2) {

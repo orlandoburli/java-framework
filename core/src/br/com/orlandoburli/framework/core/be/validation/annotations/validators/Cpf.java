@@ -7,15 +7,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation que define uma validacao de email no campo.
- * 
+ * Anottation para validar cpf
  * @author orlandoburli
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
-public @interface Email {
-
+public @interface Cpf {
 	/**
 	 * Mensagem customizada para o atributo. Se nao for especificada, a mensagem
 	 * padrao sera criada.

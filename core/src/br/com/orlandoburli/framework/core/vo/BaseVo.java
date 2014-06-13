@@ -1,6 +1,10 @@
 package br.com.orlandoburli.framework.core.vo;
 
-public abstract class BaseVo {
+import java.io.Serializable;
+
+public abstract class BaseVo implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private boolean isNew;
 
@@ -19,4 +23,5 @@ public abstract class BaseVo {
 	public String getVoName() {
 		return this.getClass().getSimpleName();
 	}
+
 }

@@ -42,7 +42,7 @@ public class MaxSizeValidator extends BaseValidator {
 	}
 
 	private void excecao(Field f, MaxSize maxSize, String string) throws ValidationBeException {
-		throw new ValidationBeException("O Tamanho máximo do campo " + ValidatorUtils.getFieldDescription(f) + " é de " + maxSize.value() + ". Informado: " + string.length());
+		throw new ValidationBeException("O Tamanho máximo do campo " + ValidatorUtils.getFieldDescription(f) + " é de " + maxSize.value() + ". Informado: " + string.length(), f.getName());
 	}
 
 }

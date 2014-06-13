@@ -31,11 +31,11 @@ public abstract class BaseDomain {
 		return false;
 	}
 
-	public String getDescription(String value) {
+	public String getDescription(Object value) {
 		String[] values = getValues();
 
 		for (int i = 0; i < values.length; i++) {
-			if (values[i].equals(value)) {
+			if (values[i].equals(value.toString())) {
 				return getDescriptions()[i];
 			}
 		}
