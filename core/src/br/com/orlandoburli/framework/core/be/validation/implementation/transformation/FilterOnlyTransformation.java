@@ -30,35 +30,42 @@ public class FilterOnlyTransformation extends BaseTransformation {
 
 		Object value = DaoUtils.getValue(DaoUtils.getGetterMethod(classe, f), vo);
 
+		String filterOnlyString = filterOnly.value();
+
 		// Se o valor do field for Null, sai do metodo.
 		if (value != null) {
-			String string = (String) value;
-			
-			String retorno = "";
-
-			for (int i = 0; i < string.length(); i++) {
-				char c = string.charAt(i);
-
-				boolean found = false;
-
-				for (int j = 0; j < filterOnly.value().length(); j++) {
-					char charFilter = filterOnly.value().charAt(j);
-
-					if (c == charFilter) {
-						found = true;
-						break;
-					}
-				}
-
-				if (found) {
-					retorno += c;
-				}
-
-			}
+			String retorno = filtrarString(value, filterOnlyString);
 
 			// Salva o novo valor.
 			DaoUtils.setValue(DaoUtils.getSetterMethod(classe, f), vo, retorno);
 		}
+	}
+
+	public static String filtrarString(Object value, String filterOnlyString) {
+		String string = (String) value;
+
+		String retorno = "";
+
+		for (int i = 0; i < string.length(); i++) {
+			char c = string.charAt(i);
+
+			boolean found = false;
+
+			for (int j = 0; j < filterOnlyString.length(); j++) {
+				char charFilter = filterOnlyString.charAt(j);
+
+				if (c == charFilter) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				retorno += c;
+			}
+
+		}
+		return retorno;
 	}
 
 }

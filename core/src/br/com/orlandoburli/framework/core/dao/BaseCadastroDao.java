@@ -1,21 +1,12 @@
 package br.com.orlandoburli.framework.core.dao;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.math.BigDecimal;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
-import br.com.orlandoburli.framework.core.dao.annotations.Column;
-import br.com.orlandoburli.framework.core.dao.annotations.DataType;
-import br.com.orlandoburli.framework.core.dao.annotations.Join;
 import br.com.orlandoburli.framework.core.dao.exceptions.ColumnNotFoundException;
 import br.com.orlandoburli.framework.core.dao.exceptions.DAOException;
 import br.com.orlandoburli.framework.core.dao.exceptions.ForeignKeyNotFoundException;
@@ -62,7 +53,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
 
-			setInsertParameters(prepared, vo, getVOClass());
+			getBuilder().setInsertParameters(prepared, vo, getVOClass(), getSequenceNextVal());
 
 			prepared.execute();
 
@@ -91,7 +82,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
 
-			setUpdateParameters(prepared, vo, getVOClass());
+			getBuilder().setUpdateParameters(prepared, vo, getVOClass());
 
 			prepared.execute();
 
@@ -119,7 +110,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
 
-			setDeleteParameters(prepared, vo, getVOClass());
+			getBuilder().setDeleteParameters(prepared, vo, getVOClass());
 
 			prepared.execute();
 
@@ -274,7 +265,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		try {
 			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
 
-			setSelectWhereParameters(prepared, filter, getVOClass(), keysOnly, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
+			getBuilder().setSelectWhereParameters(prepared, filter, getVOClass(), keysOnly, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
 
 			ResultSet result = prepared.executeQuery();
 
@@ -287,7 +278,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 				String tablename = getBuilder().getTablename(getVOClass());
 
-				resultToVo(item, result, tablename + "_", new DaoControle(getMaxSubJoins()));
+				getBuilder().resultToVo(item, result, tablename + "_", new DaoControle(getMaxSubJoins()));
 
 				list.add(item);
 			}
@@ -319,7 +310,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		try {
 			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
 
-			setSelectWhereParameters(prepared, filter, getVOClass(), false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
+			getBuilder().setSelectWhereParameters(prepared, filter, getVOClass(), false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
 
 			ResultSet result = prepared.executeQuery();
 
@@ -363,7 +354,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		try {
 			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
 
-			setSelectWhereParameters(prepared, filter, getVOClass(), false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
+			getBuilder().setSelectWhereParameters(prepared, filter, getVOClass(), false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
 
 			ResultSet result = prepared.executeQuery();
 
@@ -396,6 +387,10 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 		Log.debugsql(sql);
 
+		if (sql == null) {
+			return null;
+		}
+
 		try {
 			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
 			ResultSet result = prepared.executeQuery();
@@ -412,504 +407,6 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Seta os parametros para o insert.
-	 * 
-	 * @param prepared
-	 *            PreparedStatement que tem o comando de insert
-	 * @param vo
-	 *            Objeto com os dados a serem inseridos
-	 * @throws SQLException
-	 * @throws SQLDaoException
-	 */
-	private void setInsertParameters(PreparedStatement prepared, E vo, Class<BaseVo> classe) throws SQLException, SQLDaoException {
-
-		int posicao = 0;
-
-		for (Field f : classe.getDeclaredFields()) {
-			Column c = getBuilder().getColumn(f);
-
-			// Setar parametros
-			if (c != null) {
-
-				posicao++;
-
-				// Busca o getter para este field
-				Method getter = DaoUtils.getGetterMethod(classe, f);
-				Method setter = DaoUtils.getSetterMethod(classe, f);
-
-				// Getter nao pode ser nulo
-				if (getter != null) {
-
-					Object value = DaoUtils.getValue(getter, vo);
-					if (!c.isAutoIncrement()) {
-						Log.debugsql("Parametro SQL posicao: " + posicao + " valor: " + value);
-					}
-
-					if (value != null || c.isAutoIncrement()) {
-						if (f.getType().equals(Integer.class)) {
-							if (c.isAutoIncrement()) {
-								Integer auto = getSequenceNextVal();
-								prepared.setInt(posicao, auto);
-								DaoUtils.setValue(setter, vo, auto);
-								Log.debugsql("Parametro SQL posicao: " + posicao + " valor: " + auto);
-							} else {
-								prepared.setInt(posicao, (Integer) value);
-							}
-						} else if (f.getType().equals(String.class)) {
-							prepared.setString(posicao, (String) value);
-						} else if (f.getType().equals(Calendar.class)) {
-							if (value != null) {
-								if (c.dataType() == DataType.DATE) {
-									Date date = new Date(((Calendar) value).getTime().getTime());
-									prepared.setDate(posicao, date);
-								} else if (c.dataType() == DataType.DATETIME) {
-									Timestamp t = new Timestamp(((Calendar) value).getTimeInMillis());
-									prepared.setTimestamp(posicao, t);
-								}
-							}
-						} else if (f.getType().equals(BigDecimal.class)) {
-							prepared.setBigDecimal(posicao, (BigDecimal) value);
-						} else {
-							// Default - seta como object
-							prepared.setObject(posicao, value);
-						}
-					} else {
-
-						prepared.setNull(posicao, java.sql.Types.OTHER);
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Seta os parametros de uma clausula WHERE, usado para SELECT.
-	 * 
-	 * @param prepared
-	 *            java.sql.PreparedStatement com o comando a ser executado
-	 * @param vo
-	 *            Objeto com os valores a serem setados
-	 * @param classe
-	 *            Classe do filtro
-	 * @param keysOnly
-	 *            Indica se serao usados somente as colunas com o filtro isKey =
-	 *            true. Se for true, mesmo que a coluna esteja nula no vo, sera
-	 *            utilizada a condicao, com o valor NULL.
-	 * @param prefix
-	 *            Prefixo dos campos, usado para filtros recursivos.
-	 * @param controle
-	 *            Objeto de controle recursivo, para evitar loops infinitos no
-	 *            caso de auto-referenciamento.
-	 * @param posicao
-	 *            Objeto de controle para marcar a posicao / contador dos
-	 *            filtros setados.
-	 * @throws SQLException
-	 * @throws DAOException
-	 */
-	@SuppressWarnings("unchecked")
-	private void setSelectWhereParameters(PreparedStatement prepared, E vo, Class<BaseVo> classe, boolean keysOnly, String prefix, DaoControle controle, DaoControle posicao) throws SQLException, DAOException {
-		// int posicao = 0;
-
-		for (Field f : classe.getDeclaredFields()) {
-			Column c = getBuilder().getColumn(f);
-			Join join = f.getAnnotation(Join.class);
-
-			// Setar parametros
-			if (c != null) {
-
-				if ((keysOnly && c.isKey()) || !keysOnly) {
-
-					// Busca o getter para este field
-					Method getter = DaoUtils.getGetterMethod(classe, f);
-
-					// Getter nao pode ser nulo
-					if (getter != null) {
-
-						Object value = DaoUtils.getValue(getter, vo);
-
-						if (value != null) {
-
-							posicao.incrementaInteracoes();
-
-							Log.debugsql("Parametro SQL posicao: " + posicao.getNumeroInteracoes() + " valor: " + value);
-
-							if (f.getType().equals(Integer.class)) {
-								prepared.setInt(posicao.getNumeroInteracoes(), (Integer) value);
-							} else if (f.getType().equals(String.class)) {
-								prepared.setString(posicao.getNumeroInteracoes(), (String) value);
-							} else if (f.getType().equals(Calendar.class)) {
-								if (value != null) {
-									if (c.dataType() == DataType.DATE) {
-										Date date = new Date(((Calendar) value).getTime().getTime());
-										prepared.setDate(posicao.getNumeroInteracoes(), date);
-									} else if (c.dataType() == DataType.DATETIME) {
-										Timestamp t = new Timestamp(((Calendar) value).getTimeInMillis());
-										prepared.setTimestamp(posicao.getNumeroInteracoes(), t);
-									}
-								}
-							} else {
-								// Demais tipos, Date, Calendar, BigDecimal,
-								// etc...
-								prepared.setObject(posicao.getNumeroInteracoes(), value);
-							}
-						} else if (keysOnly) {
-							posicao.incrementaInteracoes();
-
-							Log.debugsql("Parametro SQL posicao: " + posicao.getNumeroInteracoes() + " valor: " + value);
-
-							prepared.setNull(posicao.getNumeroInteracoes(), java.sql.Types.OTHER);
-						}
-					}
-				}
-			} else if (join != null) {
-				// Filtro recursivo
-
-				if (!keysOnly && join != null) {
-					Method getter = DaoUtils.getGetterMethod(classe, f);
-
-					BaseVo vo2 = (BaseVo) DaoUtils.getValue(getter, vo);
-
-					if (vo2 != null && !controle.isMaximo()) {
-						controle.incrementaInteracoes();
-
-						String prefix2 = join.tableAlias().equals("") ? getBuilder().getTablename(f.getType()) : join.tableAlias();
-
-						setSelectWhereParameters(prepared, (E) vo2, (Class<BaseVo>) vo2.getClass(), false, prefix2, controle, posicao);
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Seta os parametros de uma clausula WHERE, usado para UPDATE.
-	 * 
-	 * @param prepared
-	 *            java.sql.PreparedStatement com o comando a ser executado
-	 * @param vo
-	 *            Objeto com os valores a serem setados
-	 * @throws SQLException
-	 */
-	private void setUpdateParameters(PreparedStatement prepared, E vo, Class<BaseVo> classe) throws SQLException {
-		int posicao = 0;
-
-		// Passo 1 - Somente os atributos
-		for (Field f : classe.getDeclaredFields()) {
-			Column c = getBuilder().getColumn(f);
-
-			// Setar parametros
-			if (c != null && !c.isKey()) {
-
-				// Busca o getter para este field
-				Method getter = DaoUtils.getGetterMethod(classe, f);
-
-				// Getter nao pode ser nulo
-				if (getter != null) {
-
-					Object value = DaoUtils.getValue(getter, vo);
-
-					Log.debugsql("Parametro SQL posicao: " + posicao + " valor: " + value);
-
-					if (value != null) {
-
-						posicao++;
-
-						if (f.getType().equals(Integer.class)) {
-							prepared.setInt(posicao, (Integer) value);
-						} else if (f.getType().equals(String.class)) {
-							prepared.setString(posicao, (String) value);
-						} else if (f.getType().equals(Calendar.class)) {
-							if (value != null) {
-								if (c.dataType() == DataType.DATE) {
-									Date date = new Date(((Calendar) value).getTime().getTime());
-									prepared.setDate(posicao, date);
-								} else if (c.dataType() == DataType.DATETIME) {
-									Timestamp t = new Timestamp(((Calendar) value).getTimeInMillis());
-									prepared.setTimestamp(posicao, t);
-								}
-							}
-						} else if (f.getType().equals(BigDecimal.class)) {
-							prepared.setBigDecimal(posicao, (BigDecimal) value);
-						} else {
-							// Demais tipos, Date, Calendar, BigDecimal,
-							// etc...
-							prepared.setObject(posicao, value);
-						}
-					} else {
-						posicao++;
-						prepared.setNull(posicao, java.sql.Types.OTHER);
-					}
-				}
-			}
-		}
-
-		// Passo 2 - Somente os campos chave
-		for (Field f : classe.getDeclaredFields()) {
-			Column c = getBuilder().getColumn(f);
-
-			// Setar parametros
-			if (c != null && c.isKey()) {
-
-				// Busca o getter para este field
-				Method getter = DaoUtils.getGetterMethod(classe, f);
-
-				// Getter nao pode ser nulo
-				if (getter != null) {
-
-					Object value = DaoUtils.getValue(getter, vo);
-
-					if (value != null) {
-
-						posicao++;
-
-						if (f.getType().equals(Integer.class)) {
-							prepared.setInt(posicao, (Integer) value);
-						} else if (f.getType().equals(String.class)) {
-							prepared.setString(posicao, (String) value);
-						} else if (f.getType().equals(Calendar.class)) {
-							Date date = new Date(((Calendar) value).getTime().getTime());
-							prepared.setDate(posicao, date);
-						} else {
-							// Demais tipos, Date, Calendar, BigDecimal,
-							// etc...
-							prepared.setObject(posicao, value);
-						}
-					} else {
-						posicao++;
-						prepared.setNull(posicao, java.sql.Types.OTHER);
-					}
-				}
-			}
-		}
-
-	}
-
-	/**
-	 * Seta os parametros de uma clausula WHERE, usado para DELETE.
-	 * 
-	 * @param prepared
-	 *            java.sql.PreparedStatement com o comando a ser executado
-	 * @param vo
-	 *            Objeto com os valores a serem setados
-	 * @param classe
-	 * @throws SQLException
-	 */
-	private void setDeleteParameters(PreparedStatement prepared, E vo, Class<BaseVo> classe) throws SQLException {
-		int posicao = 0;
-
-		for (Field f : classe.getDeclaredFields()) {
-			Column c = getBuilder().getColumn(f);
-
-			// Setar parametros
-			if (c != null && c.isKey()) {
-
-				// Busca o getter para este field
-				Method getter = DaoUtils.getGetterMethod(classe, f);
-
-				// Getter nao pode ser nulo
-				if (getter != null) {
-
-					Object value = DaoUtils.getValue(getter, vo);
-
-					if (value != null) {
-
-						posicao++;
-
-						if (f.getType().equals(Integer.class)) {
-							prepared.setInt(posicao, (Integer) value);
-						} else if (f.getType().equals(String.class)) {
-							prepared.setString(posicao, (String) value);
-						} else if (f.getType().equals(Calendar.class)) {
-							if (value != null) {
-								if (c.dataType() == DataType.DATE) {
-									Date date = new Date(((Calendar) value).getTime().getTime());
-									prepared.setDate(posicao, date);
-								} else if (c.dataType() == DataType.DATETIME) {
-									Timestamp t = new Timestamp(((Calendar) value).getTimeInMillis());
-									prepared.setTimestamp(posicao, t);
-								}
-							}
-						} else {
-							// Demais tipos, Date, Calendar, BigDecimal,
-							// etc...
-							prepared.setObject(posicao, value);
-						}
-					} else {
-						posicao++;
-						prepared.setNull(posicao, java.sql.Types.OTHER);
-					}
-				}
-			}
-		}
-
-	}
-
-	/**
-	 * Converte um java.sql.ResultSet em um VO.
-	 * 
-	 * @param vo
-	 *            Objeto que ira receber os dados.
-	 * @param result
-	 *            Objeto ResultSet com os dados.
-	 * @throws DAOException
-	 * @throws SQLException
-	 */
-	private void resultToVo(BaseVo vo, ResultSet result, String prefix, DaoControle controle) throws DAOException {
-
-		Log.info("ResultToVo - " + vo.getClass());
-
-		for (Field f : vo.getClass().getDeclaredFields()) {
-			Column c = getBuilder().getColumn(f);
-			Join j = getBuilder().getJoin(f);
-
-			if (c != null) {
-
-				// Busca o getter para este field
-				Method setter = DaoUtils.getSetterMethod(vo.getClass(), f);
-
-				// Setter nao pode ser nulo
-				if (setter != null) {
-
-					String columnName = prefix + getBuilder().getColumnName(f);
-
-					// Log.info("Column Name : " + columnName);
-
-					if (f.getType().equals(Calendar.class)) {
-						if (c.dataType() == DataType.DATETIME) {
-							Timestamp t = null;
-							try {
-								t = result.getTimestamp(columnName);
-							} catch (SQLException e) {
-								e.printStackTrace();
-							}
-
-							if (t != null) {
-								Calendar cal = Calendar.getInstance();
-								cal.setTimeInMillis(t.getTime());
-
-								DaoUtils.setValue(setter, vo, cal);
-							}
-
-						} else {
-							Date date = null;
-							try {
-								date = result.getDate(columnName);
-							} catch (SQLException e) {
-								Log.warning(e.getMessage());
-							}
-
-							if (date != null) {
-								Calendar cal = Calendar.getInstance();
-								cal.setTimeInMillis(date.getTime());
-
-								DaoUtils.setValue(setter, vo, cal);
-							}
-						}
-					} else {
-						try {
-							DaoUtils.setValue(setter, vo, result.getObject(columnName));
-						} catch (SQLException e) {
-							// Se nao achou, e porque nao existe o field no
-							// selet
-							Log.warning(e.getMessage());
-						}
-					}
-
-				}
-			} else if (j != null) {
-
-				if (f.getType().getSuperclass().equals(BaseVo.class)) {
-					// Se o tipo for BaseVo, faz injecao no VO
-
-					// Se a chave que representa ele estiver nula, podemos
-					// pular esta parte para dar agilidade.
-
-					boolean hasNull = false;
-
-					String prefix2 = j.tableAlias().equals("") ? getBuilder().getTablename(f.getType()) : j.tableAlias();
-
-					for (int i = 0; i < j.columnsRemote().length; i++) {
-						String columnOrigin = j.columnsRemote()[0];
-						Object aux = null;
-
-						try {
-							aux = result.getObject(prefix + prefix2 + "_" + columnOrigin);
-
-							if (aux == null) {
-								hasNull = true;
-							}
-						} catch (SQLException e) {
-							Log.warning(e.getMessage());
-							hasNull = true;
-						}
-					}
-
-					if (!hasNull) {
-
-						Method setterVo = DaoUtils.getSetterMethod(vo.getClass(), f);
-
-						if (setterVo != null) {
-
-							Object voChild = DaoUtils.getNewObject(f.getType());
-
-							// Seta a nova instancia do VO auxiliar
-							DaoUtils.setValue(setterVo, vo, voChild);
-
-							// Seta o vo como nao-novo, pois estamos buscando do
-							// banco de dados.
-							((BaseVo) voChild).setNew(false);
-
-							if (!controle.isMaximo()) {
-								controle.incrementaInteracoes();
-								resultToVo((BaseVo) voChild, result, prefix + prefix2 + "_", controle);
-							}
-						}
-					}
-
-				} else {
-					// Senao, usa procedimentos normais.
-
-					// Busca o getter para este field
-					Method setter = DaoUtils.getSetterMethod(vo.getClass(), f);
-
-					// Setter nao pode ser nulo
-					if (setter != null) {
-
-						String joinFieldName = j.tableRemote() + "_" + j.fieldRemote();
-
-						if (f.getType().equals(Calendar.class)) {
-							// Tratamento especial para o tipo Calendar
-							// - Converte de java.sql.Date para
-							// java.util.Calendar
-
-							Date date = null;
-							try {
-								date = result.getDate(joinFieldName);
-							} catch (SQLException e) {
-								Log.warning(e.getMessage());
-							}
-
-							if (date != null) {
-								Calendar cal = Calendar.getInstance();
-								cal.setTimeInMillis(date.getTime());
-
-								DaoUtils.setValue(setter, vo, cal);
-							}
-						} else {
-							try {
-								DaoUtils.setValue(setter, vo, result.getObject(joinFieldName));
-							} catch (SQLException e) {
-								// Se nao achou, e porque nao existe o field no
-								// selet
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 
 	@SuppressWarnings("unchecked")

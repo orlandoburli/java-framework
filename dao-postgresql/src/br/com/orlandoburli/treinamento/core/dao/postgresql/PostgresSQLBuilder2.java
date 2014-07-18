@@ -39,7 +39,7 @@ import br.com.orlandoburli.framework.core.dao.exceptions.WrongNotNullException;
 import br.com.orlandoburli.framework.core.log.Log;
 import br.com.orlandoburli.framework.core.vo.BaseVo;
 
-public class PostgresSQLBuilder extends SQLBuilder {
+public class PostgresSQLBuilder2 extends SQLBuilder {
 
 	@Override
 	public String buildSqlInsertStatement(Class<BaseVo> classe) throws DAOException {
@@ -74,12 +74,8 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public String buildSqlNextSequence(Class<BaseVo> classe) {
-		String sequenceName = getSequenceName(classe);
-		if (sequenceName != null) {
-			StringBuilder sb = new StringBuilder("SELECT nextval('" + sequenceName + "')");
-			return sb.toString();
-		}
-		return null;
+		StringBuilder sb = new StringBuilder("SELECT nextval('" + getSequenceName(classe) + "')");
+		return sb.toString();
 	}
 
 	@Override
@@ -130,7 +126,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		// Remove a virgula e o espaco do final
 		sql.delete(sql.length() - 2, sql.length());
 
-		sql.append("\n\n   FROM " + tablename);
+		sql.append("\n\n   FROM " + tablename + " \"" + tablename + "\"");
 
 		// Loop dos Joins Encontrados
 		List<String> buff = new ArrayList<String>();
@@ -170,7 +166,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			if (column != null) {
 				String prefixColumn = prefix + "_";
 
-				sql.append("\n        " + prefix + "." + this.getColumnName(f) + " AS " + prefixColumn + this.getColumnName(f) + ", ");
+				sql.append("\n        \"" + prefix + "\"." + this.getColumnName(f) + " AS " + prefixColumn + this.getColumnName(f) + ", ");
 			} else if (join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
@@ -240,7 +236,8 @@ public class PostgresSQLBuilder extends SQLBuilder {
 					boolean first = true;
 
 					for (int i = 0; i < join.columnsLocal().length; i++) {
-						sql.append("\n    " + (first ? " ON" : "AND") + " " + prefix + tableAlias + "." + join.columnsRemote()[i] + " = " + tableOrigin + "." + join.columnsLocal()[i]);
+						sql.append("\n    " + (first ? " ON" : "AND") + " \"" + prefix + tableAlias + "\"." + join.columnsRemote()[i] + " = \"" + tableOrigin + "\"." + join.columnsLocal()[i]);
+						first = false;
 					}
 				}
 
@@ -632,7 +629,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		} else if (columnSize > 0) {
 			columnType += " (" + columnSize + ") ";
 		}
-
+		
 		if (column.defaultValue() != null && !column.defaultValue().trim().equals("")) {
 			columnType += " DEFAULT " + column.defaultValue();
 		}
@@ -961,9 +958,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		sql = sql.substring(0, sql.length() - 2);
 
 		sql += ")";
-
+		
 		Log.debugsql(sql);
-
+		
 		try {
 			PreparedStatement prepared = manager.getConnection().prepareStatement(sql);
 			prepared.execute();
@@ -981,6 +978,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		return "";
 	}
 
+
 	/**
 	 * Seta os parametros para o insert.
 	 * 
@@ -988,7 +986,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	 *            PreparedStatement que tem o comando de insert
 	 * @param vo
 	 *            Objeto com os dados a serem inseridos
-	 * @param auto
+	 * @param auto 
 	 * @throws SQLException
 	 * @throws SQLDaoException
 	 */
@@ -1019,7 +1017,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 					if (value != null || c.isAutoIncrement()) {
 						if (f.getType().equals(Integer.class)) {
 							if (c.isAutoIncrement()) {
-								// Integer auto = getSequenceNextVal();
+//								Integer auto = getSequenceNextVal();
 								prepared.setInt(posicao, auto);
 								DaoUtils.setValue(setter, vo, auto);
 								Log.debugsql("Parametro SQL posicao: " + posicao + " valor: " + auto);
@@ -1479,5 +1477,4 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			}
 		}
 	}
-
 }

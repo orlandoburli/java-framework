@@ -18,25 +18,38 @@ public class DAOManager {
 	protected static List<DAOManager> pool = new ArrayList<DAOManager>();
 
 	static {
+		// Busca se nao existe uma thread aberta.
+		ThreadGroup group = Thread.currentThread().getThreadGroup();
+		ThreadGroup groupOld = group;
+		while (group != null) {
+			groupOld = group;
+			group = group.getParent();
+		}
+
+		group = groupOld;
+
+		Thread[] list = new Thread[0];
+		group.enumerate(list, true);
+
 		// Thread para verificar o tempo de vida do Daomanager, e se nao tem
 		// conexoes abertas
 		DAOManagerThread thread = new DAOManagerThread();
 		thread.start();
+
 	}
 
 	public static DAOManager getDAOManager() {
 		DAOManager daoManager = new DAOManager();
-		
+
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 		int linha = 2;
-		
+
 		daoManager.setStackElement(stackTrace[linha]);
 
 		pool.add(daoManager);
 
 		return daoManager;
 	}
-
 
 	private Connection connection;
 	private Calendar aliveTime;
@@ -64,12 +77,13 @@ public class DAOManager {
 	protected boolean isExpired() {
 		long now = Calendar.getInstance().getTimeInMillis() / 60 / 1000;
 		long alive = aliveTime.getTimeInMillis() / 60 / 1000;
-		
+
 		long difference = now - alive;
-		
+
 		int maxTimeOut = Integer.parseInt(System.getProperty("dao.manager.thread.timeout"));
-		
-		// Se a diferenca for maior que maxTimeOut, quer dizer que esta inativo a (maxTimeOut) minutos.
+
+		// Se a diferenca for maior que maxTimeOut, quer dizer que esta inativo
+		// a (maxTimeOut) minutos.
 		// Neste caso, a execucao deve morrer.
 		if (difference > maxTimeOut) {
 			return true;
