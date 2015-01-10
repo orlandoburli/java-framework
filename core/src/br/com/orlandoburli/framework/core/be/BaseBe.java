@@ -87,9 +87,9 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	 * 
 	 * @param vo
 	 *            Objeto a ser removido.
-	 * @throws DeleteBeException
+	 * @throws BeException 
 	 */
-	public void remove(E vo) throws DeleteBeException {
+	public void remove(E vo) throws BeException {
 		doBeforeDelete(vo);
 
 		F dao = getNewDao();
@@ -245,7 +245,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	public void doBeforeInsert(E vo) throws BeException {
 	}
 
-	public void doBeforeDelete(E vo) throws DeleteBeException {
+	public void doBeforeDelete(E vo) throws BeException {
 	}
 
 	public void doAfterSave(E vo) throws SaveBeException {

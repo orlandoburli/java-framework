@@ -22,7 +22,7 @@ public final class CNPJUtils {
 				// converte o i-Ã©simo caractere do CNPJ em um nÃºmero:
 				// por exemplo, transforma o caractere '0' no inteiro 0
 				// (48 eh a posiÃ§Ã£o de '0' na tabela ASCII)
-				num = (int) (CNPJ.charAt(i) - 48);
+				num = CNPJ.charAt(i) - 48;
 				sm = sm + (num * peso);
 				peso = peso + 1;
 				if (peso == 10)
@@ -39,7 +39,7 @@ public final class CNPJUtils {
 			sm = 0;
 			peso = 2;
 			for (i = 12; i >= 0; i--) {
-				num = (int) (CNPJ.charAt(i) - 48);
+				num = CNPJ.charAt(i) - 48;
 				sm = sm + (num * peso);
 				peso = peso + 1;
 				if (peso == 10)

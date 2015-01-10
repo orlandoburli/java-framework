@@ -2,6 +2,7 @@ package br.com.orlandoburli.framework.core.be.validation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import br.com.orlandoburli.framework.core.be.exceptions.BeException;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.FilterOnly;
@@ -45,14 +46,19 @@ import br.com.orlandoburli.framework.core.be.validation.implementation.validator
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.NotNegativeValidator;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.NotNullValidator;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.NotZeroValidator;
+import br.com.orlandoburli.framework.core.dao.DaoUtils;
+import br.com.orlandoburli.framework.core.dao.annotations.Column;
+import br.com.orlandoburli.framework.core.dao.annotations.Join;
+import br.com.orlandoburli.framework.core.vo.BaseDomain;
 import br.com.orlandoburli.framework.core.vo.BaseVo;
+import br.com.orlandoburli.framework.core.vo.DomainVo;
 import br.com.orlandoburli.framework.core.vo.annotations.Description;
 
 public final class ValidatorUtils {
 
 	/**
 	 * Valida um vo baseado nas regras definidas pelas annotations.
-	 * 
+	 *
 	 * @param vo
 	 *            VO a ser validado.
 	 * @throws BeException
@@ -107,7 +113,7 @@ public final class ValidatorUtils {
 
 	/**
 	 * Aplica as transformacoes que ocorrerem antes da validacao.
-	 * 
+	 *
 	 * @param vo
 	 *            VO a ser transformado.
 	 */
@@ -117,7 +123,7 @@ public final class ValidatorUtils {
 
 	/**
 	 * Aplica as transformacoes que ocorrerem apos a validacao.
-	 * 
+	 *
 	 * @param vo
 	 *            VO a ser transformado.
 	 */
@@ -127,7 +133,7 @@ public final class ValidatorUtils {
 
 	/**
 	 * Aplica as transformacoes no VO, no momento definido.
-	 * 
+	 *
 	 * @param vo
 	 *            VO a ser transformado.
 	 * @param when
@@ -170,7 +176,11 @@ public final class ValidatorUtils {
 				} else if (a instanceof MD5) {
 					MD5 md5 = (MD5) a;
 					if (md5 != null && md5.when() == when) {
-						new MD5Transformation().transform(vo, f, classe);
+						if (vo.isNew() && md5.onInsert()) {
+							new MD5Transformation().transform(vo, f, classe);
+						} else if (!vo.isNew() && md5.onUpdate()) {
+							new MD5Transformation().transform(vo, f, classe);
+						}
 					}
 				} else if (a instanceof NoSpace) {
 					NoSpace noSpace = (NoSpace) a;
@@ -206,6 +216,101 @@ public final class ValidatorUtils {
 			}
 		}
 	}
+
+	public static boolean isField(Field f) {
+		Column c = f.getAnnotation(Column.class);
+		if (c == null) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isKey(Field f) {
+		Column c = f.getAnnotation(Column.class);
+
+		if (c != null && c.isKey()) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public static boolean isDomain(Field f) {
+		Column c = f.getAnnotation(Column.class);
+		Domain d = f.getAnnotation(Domain.class);
+
+		if (c != null && d != null) {
+			return true;
+		}
+
+		return false;
+	}
+
+	public static List<DomainVo> getDomains(Field f) {
+		if (!isDomain(f)) {
+			return null;
+		}
+
+		Domain d = f.getAnnotation(Domain.class);
+
+		BaseDomain domain = (BaseDomain) DaoUtils.getNewObject(d.value());
+
+		return domain.getList();
+	}
+
+	public static String getDomainValue(Field f, Object value) {
+		if (isDomain(f)) {
+			Domain d = f.getAnnotation(Domain.class);
+
+			BaseDomain domain = (BaseDomain) DaoUtils.getNewObject(d.value());
+
+			return domain.getDescription(value);
+		}
+
+		return null;
+	}
+
+	public static boolean isJoin(Class<?> clazz, Field f) {
+		if (!isField(f)) {
+			return false;
+		}
+		Column c = f.getAnnotation(Column.class);
+		String columnName = c.name();
+
+		Field[] fields = clazz.getDeclaredFields();
+
+		for (Field field : fields) {
+			Join join = field.getAnnotation(Join.class);
+
+			if (join != null) {
+				if (join.columnsLocal()[0].equals(columnName)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/*
+	 * public static boolean isJoin(Class<?> clazz, Field f) { if (!isField(f))
+	 * { return false; } Column c = f.getAnnotation(Column.class); String
+	 * columnName = c.name();
+	 * 
+	 * Join j = null; Field fJoin = null;
+	 * 
+	 * Field[] fields = clazz.getDeclaredFields();
+	 * 
+	 * for (Field field : fields) { Join join = field.getAnnotation(Join.class);
+	 * 
+	 * if (join != null) { if (join.columnsLocal()[0].equals(columnName)) { j =
+	 * join; fJoin = field; break; } } }
+	 * 
+	 * if (j != null) { return true; }
+	 * 
+	 * return false; }
+	 */
 
 	public static String getFieldDescription(Field f) {
 		if (f != null) {

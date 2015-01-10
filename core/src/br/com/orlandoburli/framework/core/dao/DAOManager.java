@@ -18,6 +18,7 @@ public class DAOManager {
 	protected static List<DAOManager> pool = new ArrayList<DAOManager>();
 
 	static {
+
 		// Busca se nao existe uma thread aberta.
 		ThreadGroup group = Thread.currentThread().getThreadGroup();
 		ThreadGroup groupOld = group;
@@ -33,12 +34,21 @@ public class DAOManager {
 
 		// Thread para verificar o tempo de vida do Daomanager, e se nao tem
 		// conexoes abertas
-		DAOManagerThread thread = new DAOManagerThread();
-		thread.start();
+		String starThread = System.getProperty("dao.manager.thread.start");
+
+		if (starThread != null && starThread.equalsIgnoreCase("true")) {
+			DAOManagerThread thread = new DAOManagerThread();
+			thread.start();
+		}
 
 	}
 
+	@Deprecated
 	public static DAOManager getDAOManager() {
+		return getInstance();
+	}
+
+	public static DAOManager getInstance() {
 		DAOManager daoManager = new DAOManager();
 
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -66,12 +76,12 @@ public class DAOManager {
 		if (isDead()) {
 			throw new RuntimeException("Class DAOManager está MORTA!");
 		}
-		this.aliveTime = Calendar.getInstance();
+		aliveTime = Calendar.getInstance();
 	}
 
 	/**
 	 * Verifica se o manager ja passou do tempo de "expirar".
-	 * 
+	 *
 	 * @return manager expirado
 	 */
 	protected boolean isExpired() {
@@ -97,15 +107,15 @@ public class DAOManager {
 	 */
 	protected void die() {
 		rollback();
-		this.setDead(true);
+		setDead(true);
 	}
 
 	public void begin() {
 		alive();
 
-		if (this.connection == null) {
+		if (connection == null) {
 			try {
-				this.connection = getNewConnection();
+				connection = getNewConnection();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
@@ -193,7 +203,7 @@ public class DAOManager {
 		alive();
 
 		begin();
-		return this.connection;
+		return connection;
 	}
 
 	public boolean isDead() {

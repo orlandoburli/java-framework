@@ -75,6 +75,12 @@ public class OracleSQLBuilder extends SQLBuilder {
 	@Override
 	public String buildSqlNextSequence(Class<BaseVo> classe) {
 		String sequenceName = getSequenceName(classe);
+		
+		String schema = getSchemaName(classe);
+		
+		if (schema != null && !schema.trim().equals("")) {
+			sequenceName = schema + "." + sequenceName;
+		}
 
 		if (sequenceName != null) {
 			StringBuilder sb = new StringBuilder("SELECT " + sequenceName + ".NEXTVAL FROM DUAL");
@@ -127,17 +133,17 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 		Field[] fields = classe.getDeclaredFields();
 
-		buildSelectFields(classe, sql, fields, tablename, new DaoControle(maxSubJoins));
+		buildSelectFields(classe, sql, fields, "T1", new DaoControle(maxSubJoins));
 
 		// Remove a virgula e o espaco do final
 		sql.delete(sql.length() - 2, sql.length());
 
-		sql.append("\n\n   FROM " + tablename);
+		sql.append("\n\n   FROM " + tablename + " T1");
 
 		// Loop dos Joins Encontrados
 		List<String> buff = new ArrayList<String>();
 
-		buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
+		buidlSelectJoins(sql, fields, tablename, buff, "T1_", tablename, new DaoControle(maxSubJoins));
 
 		return sql.toString();
 	}
@@ -1406,7 +1412,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 						} catch (SQLException e) {
 							// Se nao achou, e porque nao existe o field no
 							// selet
-							Log.warning(e.getMessage());
+							Log.warning("Erro ao buscar coluna " + columnName + ":" + e.getMessage());
 						}
 					}
 

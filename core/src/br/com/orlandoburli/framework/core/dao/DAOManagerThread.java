@@ -11,6 +11,7 @@ public class DAOManagerThread extends Thread {
 		this.setName("Thread DAOManager - Checagem de DAO's abertas");
 	}
 
+	@Override
 	public void run() {
 
 		Log.fine("Iniciando DAOManagerThread");

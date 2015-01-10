@@ -6,8 +6,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.gson.Gson;
-
 import br.com.orlandoburli.framework.core.be.BaseBe;
 import br.com.orlandoburli.framework.core.be.exceptions.BeException;
 import br.com.orlandoburli.framework.core.be.exceptions.persistence.DeleteBeException;
@@ -18,6 +16,7 @@ import br.com.orlandoburli.framework.core.be.exceptions.persistence.UpdateBeExce
 import br.com.orlandoburli.framework.core.dao.BaseCadastroDao;
 import br.com.orlandoburli.framework.core.dao.DAOManager;
 import br.com.orlandoburli.framework.core.dao.DaoUtils;
+import br.com.orlandoburli.framework.core.utils.Utils;
 import br.com.orlandoburli.framework.core.vo.BaseVo;
 import br.com.orlandoburli.framework.core.vo.utils.MessageVo;
 import br.com.orlandoburli.framework.core.web.filters.InjectionFilter;
@@ -56,7 +55,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	@SuppressWarnings("unchecked")
 	protected E getNewVo() {
 		try {
-			return (E) getVOClass().newInstance();
+			return (E) this.getVOClass().newInstance();
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
@@ -67,125 +66,155 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 	@SuppressWarnings("unchecked")
 	protected G getNewBe(DAOManager manager) {
-		return (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) getBEClass(), manager);
+		return (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) this.getBEClass(), manager);
 	}
 
-//	public boolean doBeforeSave(E vo, DAOManager manager) {
-//		return true;
-//	}
-
 	public void inserir() {
-		E vo = getNewVo();
-		G be = getNewBe(getManager());
+		E vo = this.getNewVo();
+		G be = this.getNewBe(this.getManager());
 
 		try {
-			getManager().begin();
+			this.getManager().begin();
 
-			injectVo(vo);
+			this.injectVo(vo);
 
-			doBeforeInserir(vo, getManager());
-			doBeforeSalvar(vo, getManager());
+			this.doBeforeInserir(vo, this.getManager());
+			this.doBeforeSalvar(vo, this.getManager());
 
 			be.save(vo);
 
-			doAfterInserir(vo, getManager());
-			doAfterSalvar(vo, getManager());
+			this.doAfterInserir(vo, this.getManager());
+			this.doAfterSalvar(vo, this.getManager());
 
-			getManager().commit();
+			this.getManager().commit();
 
-			write(new Gson().toJson(new RetornoAction(true, "Registro inserido com sucesso!")));
+			this.write(Utils.voToJson(new RetornoAction(true, "Registro inserido com sucesso!")));
 
 		} catch (BeException e) {
-			getManager().rollback();
-			write(new Gson().toJson(new RetornoAction(false, e.getMessage(), e.getField())));
+			this.getManager().rollback();
+			this.write(Utils.voToJson(new RetornoAction(false, e.getMessage(), e.getField())));
 		} finally {
-			getManager().commit();
+			this.getManager().commit();
 		}
 	}
 
 	public void alterar() {
-		DAOManager manager = DAOManager.getDAOManager();
+		DAOManager manager = DAOManager.getInstance();
 		try {
 			manager.begin();
 
 			@SuppressWarnings("unchecked")
-			E vo = (E) getRequest().getSession().getAttribute(getVoSessionId()); // getNewVo();
-			G be = getNewBe(manager);
+			E vo = (E) this.getRequest().getSession().getAttribute(this.getVoSessionId()); // getNewVo();
+			G be = this.getNewBe(manager);
 
-			doBeforeAlterar(vo, manager);
-			doBeforeSalvar(vo, manager);
+			this.doBeforeAlterar(vo, manager);
+			this.doBeforeSalvar(vo, manager);
 
-			injectVo(vo);
+			this.injectVo(vo);
 
-			doAfterAlterar(vo, manager);
-			doAfterSalvar(vo, manager);
+			this.doAfterAlterar(vo, manager);
+			this.doAfterSalvar(vo, manager);
 
 			be.save(vo);
 
 			manager.commit();
 
-			write(new Gson().toJson(new RetornoAction(true, "Registro alterado com sucesso!", "")));
+			this.write(Utils.voToJson(new RetornoAction(true, "Registro alterado com sucesso!", "")));
 
 		} catch (BeException e) {
 			manager.rollback();
-			write(new Gson().toJson(new RetornoAction(false, e.getMessage(), e.getField())));
+			this.write(Utils.voToJson(new RetornoAction(false, e.getMessage(), e.getField())));
 		} finally {
 			manager.commit();
 		}
 	}
 
 	public void excluir() {
-		DAOManager manager = DAOManager.getDAOManager();
+		DAOManager manager = DAOManager.getInstance();
 		try {
 			manager.begin();
 
-			E vo = getNewVo();
-			G be = getNewBe(manager);
+			E vo = this.getNewVo();
+			G be = this.getNewBe(manager);
 
-			doBeforeExcluir(vo, manager);
+			this.doBeforeExcluir(vo, manager);
 
-			injectVo(vo);
+			this.injectVo(vo);
 
-			doAfterExcluir(vo, manager);
+			this.doAfterExcluir(vo, manager);
 
 			be.remove(vo);
 
-			write(new Gson().toJson(new RetornoAction(true, "Registro excluído com sucesso!", "")));
+			this.write(Utils.voToJson(new RetornoAction(true, "Registro excluído com sucesso!", "")));
 
 			manager.commit();
-		} catch (DeleteBeException e) {
+		} catch (BeException e) {
 			manager.rollback();
-			write(new Gson().toJson(new RetornoAction(false, e.getMessage(), e.getField())));
+			this.write(Utils.voToJson(new RetornoAction(false, e.getMessage(), e.getField())));
 		} finally {
 			manager.commit();
 		}
 	}
 
 	public void visualizar() {
-		DAOManager manager = DAOManager.getDAOManager();
+		DAOManager manager = DAOManager.getInstance();
 
 		try {
 
-			G be = getNewBe(manager);
+			G be = this.getNewBe(manager);
 
-			E vo = getNewVo();
+			E vo = this.getNewVo();
 
-			injectVo(vo);
+			this.injectVo(vo);
 
-			doBeforeVisualizar(getRequest(), getResponse(), vo, be, manager);
+			this.doBeforeVisualizar(this.getRequest(), this.getResponse(), vo, be, manager);
 
 			vo = be.get(vo);
 
-			doBeforeWriteVo(vo);
+			this.doBeforeWriteVo(vo);
 
-			getRequest().setAttribute("vo", vo);
+			this.getRequest().setAttribute("vo", vo);
 
-			getRequest().getSession().setAttribute(getVoSessionId(), vo);
+			this.getRequest().getSession().setAttribute(this.getVoSessionId(), vo);
 
-			forward(getJspCadastro());
+			// Disabled especiais
+			if (this.operacao.equalsIgnoreCase("alterar")) {
+				this.getRequest().setAttribute("disabledAlterar", "disabled=\"disabled\"");
+			}
+			if (this.operacao.equalsIgnoreCase("inserir")) {
+				this.getRequest().setAttribute("disabledInserir", "disabled=\"disabled\"");
+			}
+
+			this.forward(this.getJspCadastro());
 
 		} catch (ListException e) {
-			new Gson().toJson(new RetornoAction(false, e.getMessage(), e.getField()));
+			this.write(Utils.voToJson(new RetornoAction(false, e.getMessage(), e.getField())));
+		} finally {
+			manager.commit();
+		}
+	}
+
+	public void vo() {
+		DAOManager manager = DAOManager.getInstance();
+
+		try {
+
+			G be = this.getNewBe(manager);
+
+			E vo = this.getNewVo();
+
+			this.injectVo(vo);
+
+			this.doBeforeVisualizar(this.getRequest(), this.getResponse(), vo, be, manager);
+
+			vo = be.get(vo);
+
+			this.doBeforeWriteVo(vo);
+
+			this.write(Utils.voToJson(vo));
+
+		} catch (ListException e) {
+			Utils.voToJson(new RetornoAction(false, e.getMessage(), e.getField()));
 		} finally {
 			manager.commit();
 		}
@@ -193,9 +222,9 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 	public void injectVo(E vo) {
 		InjectionFilter filter = new InjectionFilter();
-		filter.setContext(getContext());
-		filter.setRequest(getRequest());
-		filter.setResponse(getResponse());
+		filter.setContext(this.getContext());
+		filter.setRequest(this.getRequest());
+		filter.setResponse(this.getResponse());
 
 		try {
 			filter.doFilter(vo);
@@ -206,7 +235,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 		}
 	}
 
-	public void doBeforeVisualizar(HttpServletRequest request, HttpServletResponse response, E vo, G be, DAOManager manager) {
+	public void doBeforeVisualizar(HttpServletRequest request, HttpServletResponse response, E vo, G be, DAOManager manager) throws ListException {
 
 	}
 
@@ -214,7 +243,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public void consultar() {
-		visualizar();
+		this.visualizar();
 	}
 
 	public boolean doBeforeDelete(E vo) throws DeleteBeException {
@@ -237,8 +266,10 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	/**
 	 * Sobrescrever o metodo para operacoes relalizadas apos inserir ou alterar
 	 * um registro
+	 *
+	 * @throws BeException
 	 */
-	public void doAfterSalvar(E vo, DAOManager manager) throws SaveBeException {
+	public void doAfterSalvar(E vo, DAOManager manager) throws SaveBeException, BeException {
 
 	}
 
@@ -284,7 +315,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	/**
 	 * Essa propriedade indica se vai ser escrito um "ok" ou o proprio VO, no
 	 * caso de sucesso num insert.
-	 * 
+	 *
 	 * @param writeVoOnInsert
 	 */
 	public void setWriteVoOnInsert(boolean writeVoOnInsert) {
@@ -294,17 +325,17 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	/**
 	 * Essa propriedade indica se vai ser escrito um "ok" ou o proprio VO, no
 	 * caso de sucesso num insert.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isWriteVoOnInsert() {
-		return writeVoOnInsert;
+		return this.writeVoOnInsert;
 	}
 
 	/**
 	 * Essa propriedade indica se vai ser escrito um "ok" ou o proprio VO, no
 	 * caso de sucesso num update.
-	 * 
+	 *
 	 * @param writeVoOnUpdate
 	 */
 	public void setWriteVoOnUpdate(boolean writeVoOnUpdate) {
@@ -314,11 +345,11 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	/**
 	 * Essa propriedade indica se vai ser escrito um "ok" ou o proprio VO, no
 	 * caso de sucesso num update.
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isWriteVoOnUpdate() {
-		return writeVoOnUpdate;
+		return this.writeVoOnUpdate;
 	}
 
 	public void setOperacao(String operacao) {
@@ -326,19 +357,22 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public String getOperacao() {
-		return operacao;
+		if (this.operacao == null) {
+			this.operacao = "";
+		}
+		return this.operacao;
 	}
 
 	protected String getNomeEntidade() {
-		return getVOClass().getSimpleName().replace("Vo", "").toLowerCase();
+		return this.getVOClass().getSimpleName().replace("Vo", "").toLowerCase();
 	}
 
 	public String getVoSessionId() {
-		return getNomeEntidade() + "_cadastro_vo";
+		return this.getNomeEntidade() + "_cadastro_vo";
 	}
 
 	public String getTerm() {
-		return term;
+		return this.term;
 	}
 
 	public void setTerm(String term) {
@@ -346,10 +380,10 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public DAOManager getManager() {
-		if (manager == null) {
-			manager = DAOManager.getDAOManager();
+		if (this.manager == null) {
+			this.manager = DAOManager.getInstance();
 		}
-		return manager;
+		return this.manager;
 	}
 
 	public void setManager(DAOManager manager) {

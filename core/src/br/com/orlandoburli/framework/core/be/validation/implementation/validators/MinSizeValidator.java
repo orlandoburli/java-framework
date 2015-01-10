@@ -26,22 +26,26 @@ public class MinSizeValidator extends BaseValidator {
 			String string = (String) value;
 
 			if (string == null || string.length() < minSize.value()) {
-				excecao(f, minSize, string.length());
+				this.excecao(f, minSize, string.length());
 			}
 		} else {
 			if (value == null) {
-				excecao(f, minSize, 0);
+				return;
 			}
 			String string = value.toString();
 
-			if (string.length() < minSize.value()) {
-				excecao(f, minSize, string.length());
+			if (string.length() > 0 && string.length() < minSize.value()) {
+				this.excecao(f, minSize, string.length());
 			}
 		}
 	}
 
 	private void excecao(Field f, MinSize minSize, int length) throws ValidationBeException {
-		throw new ValidationBeException("O Tamanho mínimo do campo " + ValidatorUtils.getFieldDescription(f) + " é de " + minSize.value() + ". Informado: " + length, f.getName());
+		if (minSize.customError() != null && !minSize.customError().trim().equals("")) {
+			throw new ValidationBeException(minSize.customError(), f.getName());
+		} else {
+			throw new ValidationBeException("O Tamanho mínimo do campo " + ValidatorUtils.getFieldDescription(f) + " é de " + minSize.value() + ". Informado: " + length, f.getName());
+		}
 	}
 
 }

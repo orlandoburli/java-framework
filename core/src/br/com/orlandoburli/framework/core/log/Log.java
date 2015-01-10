@@ -6,34 +6,34 @@ import java.util.Calendar;
 public final class Log {
 
 	public static void fine(Object message) {
-		log(Level.FINE, message);
+		Log.log(Level.FINE, message);
 	}
 
 	public static void debug(Object message) {
-		log(Level.DEBUG, message);
+		Log.log(Level.DEBUG, message);
 	}
 
 	public static void debugsql(Object message) {
-		log(Level.DEBUG_SQL, message);
+		Log.log(Level.DEBUG_SQL, message);
 	}
 
 	public static void info(Object message) {
-		log(Level.INFO, message);
+		Log.log(Level.INFO, message);
 	}
 
 	public static void warning(Object message) {
-		log(Level.WARNING, message);
+		Log.log(Level.WARNING, message);
 	}
 
 	public static void error(Object message) {
-		log(Level.ERROR, message);
+		Log.log(Level.ERROR, message);
 	}
 
 	public static void critical(Object message) {
-		log(Level.CRITICAL, message);
+		Log.log(Level.CRITICAL, message);
 	}
 
-	public static void log(Level level, Object message) {
+	private static void log(Level level, Object message) {
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 		int linha = 3;
 		int levelMin = Integer.parseInt(System.getProperty("log.level"));

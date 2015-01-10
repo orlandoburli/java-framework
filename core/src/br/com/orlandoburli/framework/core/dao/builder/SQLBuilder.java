@@ -111,8 +111,14 @@ public abstract class SQLBuilder {
 		Table t = getTable(classe);
 
 		if (t != null) {
-			if (t.value() != null && !t.value().trim().equals("")) {
-				return t.value();
+			String value = t.value();
+			if (value != null && !value.trim().equals("")) {
+				
+				if (t.schema() != null && !t.schema().trim().equals("")) {
+					value = t.schema() + "." + value;
+				}
+				
+				return value;
 			}
 		}
 
@@ -142,6 +148,16 @@ public abstract class SQLBuilder {
 		}
 
 		return null;
+	}
+	
+	public String getSchemaName(Class<?> classe) {
+		Table table = getTable(classe);
+		
+		if (table != null && table.schema() != null && !table.schema().trim().equals("")) {
+			return table.schema();
+		}
+		
+		return "";
 	}
 
 	private Table getTable(Class<?> classe) {

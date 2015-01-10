@@ -276,9 +276,9 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 				// dados.
 				item.setNew(false);
 
-				String tablename = getBuilder().getTablename(getVOClass());
+				// String tablename = getBuilder().getTablename(getVOClass());
 
-				getBuilder().resultToVo(item, result, tablename + "_", new DaoControle(getMaxSubJoins()));
+				getBuilder().resultToVo(item, result, getBuilder().getTablename(getVOClass()) + "_", new DaoControle(getMaxSubJoins()));
 
 				list.add(item);
 			}
@@ -431,62 +431,64 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 			return this;
 		}
 
-		try {
-			// Checa se a sequence existe
-			getBuilder().sequenceExists(getVOClass(), getManager());
-		} catch (SequenceNotExistsException e) {
+		if (isUpdateSchema()) {
 			try {
-				getBuilder().createSequence(getVOClass(), getManager());
-			} catch (DAOException e1) {
-				Log.critical(e1);
+				// Checa se a sequence existe
+				getBuilder().sequenceExists(getVOClass(), getManager());
+			} catch (SequenceNotExistsException e) {
+				try {
+					getBuilder().createSequence(getVOClass(), getManager());
+				} catch (DAOException e1) {
+					Log.critical(e1);
+				}
 			}
-		}
 
-		try {
-			// Checa se a tabela exsite
-			getBuilder().tableExists(getVOClass(), getManager());
-		} catch (TableNotExistsException e) {
-			getBuilder().createTable(getVOClass(), getManager());
-		}
-
-		boolean flagOk = false;
-
-		// Fica em loop ate que esteja 100% OK
-		while (!flagOk) {
 			try {
-				// Checa se a tabela esta ok com seus campos
-				getBuilder().tableCheck(getVOClass(), getManager());
-				flagOk = true;
-			} catch (WrongNotNullException | WrongColumnException | ColumnNotFoundException e) {
-				getBuilder().alterTable(getVOClass(), getManager(), e);
+				// Checa se a tabela exsite
+				getBuilder().tableExists(getVOClass(), getManager());
+			} catch (TableNotExistsException e) {
+				getBuilder().createTable(getVOClass(), getManager());
 			}
-		}
 
-		// Checa as constraints
-		flagOk = false;
+			boolean flagOk = false;
 
-		while (!flagOk) {
-			try {
-				getBuilder().constraintsCheck(getVOClass(), getManager());
-				flagOk = true;
-			} catch (UniqueConstraintNotFoundException e) {
-				getBuilder().createUniqueConstraint(getVOClass(), e.getConstraint(), getManager());
+			// Fica em loop ate que esteja 100% OK
+			while (!flagOk) {
+				try {
+					// Checa se a tabela esta ok com seus campos
+					getBuilder().tableCheck(getVOClass(), getManager());
+					flagOk = true;
+				} catch (WrongNotNullException | WrongColumnException | ColumnNotFoundException e) {
+					getBuilder().alterTable(getVOClass(), getManager(), e);
+				}
 			}
-		}
 
-		// Checa as chaves estrangeiras
-		flagOk = false;
+			// Checa as constraints
+			flagOk = false;
 
-		while (!flagOk) {
-			try {
-				getBuilder().foreignKeysCheck(getVOClass(), getManager());
-				flagOk = true;
-			} catch (ForeignKeyNotFoundException e) {
-				getBuilder().createForeignKey(getVOClass(), e.getJoin(), e.getField(), getManager());
+			while (!flagOk) {
+				try {
+					getBuilder().constraintsCheck(getVOClass(), getManager());
+					flagOk = true;
+				} catch (UniqueConstraintNotFoundException e) {
+					getBuilder().createUniqueConstraint(getVOClass(), e.getConstraint(), getManager());
+				}
 			}
-		}
 
-		addToBuffer();
+			// Checa as chaves estrangeiras
+			flagOk = false;
+
+			while (!flagOk) {
+				try {
+					getBuilder().foreignKeysCheck(getVOClass(), getManager());
+					flagOk = true;
+				} catch (ForeignKeyNotFoundException e) {
+					getBuilder().createForeignKey(getVOClass(), e.getJoin(), e.getField(), getManager());
+				}
+			}
+
+			addToBuffer();
+		}
 
 		return this;
 	}
@@ -528,6 +530,10 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 * @throws DAOException
 	 */
 	private boolean isInBuffer() throws DAOException {
+		if (!isDbCheck()) {
+			return true;
+		}
+
 		for (String s : BUFFER_TABELAS) {
 			String tableName = getBuilder().getTablename(getVOClass());
 
@@ -574,7 +580,37 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 * @return Numero de niveis.
 	 */
 	public int getMaxSubJoins() {
-		return 10;
+		return 15;
+	}
+
+	/**
+	 * Indica se é pra checar o schema
+	 * 
+	 * @return
+	 */
+	public boolean isDbCheck() {
+		String dbCheck = System.getProperty("db.check");
+
+		if (dbCheck != null && dbCheck.equalsIgnoreCase("true")) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Indica se é para dar update nos objetos de banco de dados
+	 * 
+	 * @return
+	 */
+	public boolean isUpdateSchema() {
+		String dbUpdateSchema = System.getProperty("db.update.schema");
+
+		if (dbUpdateSchema != null && dbUpdateSchema.equalsIgnoreCase("true")) {
+			return true;
+		}
+
+		return false;
 	}
 
 }

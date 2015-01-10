@@ -23,4 +23,9 @@ public @interface Table {
 	
 	UniqueConstraint[] constraints() default {};
 	
+	/**
+	 * Nome do schema a ser colocado na tabela, se houver
+	 * @return nome do Schema
+	 */
+	String schema() default "";
 }

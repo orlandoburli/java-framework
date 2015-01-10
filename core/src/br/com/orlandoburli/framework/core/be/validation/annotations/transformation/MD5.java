@@ -8,9 +8,9 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation de transformacao para salvar o dado como MD5.
- * 
+ *
  * @author orlandoburli
- * 
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
@@ -20,8 +20,22 @@ public @interface MD5 {
 	/**
 	 * Indica quando a transformacao deve ocorrer. O default e AFTER_VALIDATE
 	 * (apos a validacao).
-	 * 
+	 *
 	 * @return Momento da transformacao.
 	 */
 	TransformateWhen when() default TransformateWhen.AFTER_VALIDATE;
+
+	/**
+	 * Indica se ira aplicar a transformacao durante a insercao
+	 *
+	 * @return
+	 */
+	boolean onInsert() default true;
+
+	/**
+	 * Indica se ira aplicar a transformacao durante o update
+	 * 
+	 * @return
+	 */
+	boolean onUpdate() default true;
 }

@@ -30,11 +30,11 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 	private DAOManager manager;
 
 	public void execute() {
-		doBeforeExecute();
-		if (getOpcao() != null && getOpcao().equalsIgnoreCase("grid")) {
-			grid();
+		this.doBeforeExecute();
+		if (this.getOpcao() != null && this.getOpcao().equalsIgnoreCase("grid")) {
+			this.grid();
 		} else {
-			forward(getJspConsulta());
+			forward(this.getJspConsulta());
 		}
 	}
 
@@ -45,23 +45,25 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 	@SuppressWarnings("unchecked")
 	@IgnoreMethodAuthentication
 	public void grid() {
-		
+
 		try {
-			G be = (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) getBEClass(), getManager()); 
+			G be = (G) DaoUtils.getNewBe((Class<BaseBe<BaseVo, BaseCadastroDao<BaseVo>>>) this.getBEClass(), this.getManager());
 
-			E filter = (E) getVOClass().newInstance();
+			E filter = (E) this.getVOClass().newInstance();
 
-			doBeforeFilter(filter, be, getRequest(), getResponse());
+			StringBuilder whereCondition = new StringBuilder();
+
+			this.doBeforeFilter(filter, be, getRequest(), getResponse(), whereCondition);
 
 			try {
-				List<E> list = be.getList(filter, "", getOrderFields(), getPageNumber(), getPageSize());
-				int pageCount = be.getPageCount(filter, "", getPageSize());
+				List<E> list = be.getList(filter, whereCondition.toString(), this.getOrderFields(), this.getPageNumber(), this.getPageSize());
+				int pageCount = be.getPageCount(filter, whereCondition.toString(), this.getPageSize());
 
-				doBeforeSetList(list, pageCount, getPageSize(), getPageNumber());
+				this.doBeforeSetList(list, pageCount, this.getPageSize(), this.getPageNumber());
 
 				getRequest().setAttribute("listSource", list);
-				getRequest().setAttribute("pageNumber", getPageNumber());
-				getRequest().setAttribute("pageSize", getPageSize());
+				getRequest().setAttribute("pageNumber", this.getPageNumber());
+				getRequest().setAttribute("pageSize", this.getPageSize());
 				getRequest().setAttribute("pageCount", pageCount);
 			} catch (ListException e) {
 				e.printStackTrace();
@@ -74,17 +76,18 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 			injection.setResponse(getResponse());
 			injection.doFilter(this);
 
-			forward(getJspGridConsulta());
+			forward(this.getJspGridConsulta());
+
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		} finally {
-			getManager().commit();
+			this.getManager().commit();
 		}
 	}
 
-	public void doBeforeSetList(List<E> list, int pageCount, int pageSize, int pageNumber) {
+	public void doBeforeSetList(List<E> list, int pageCount, int pageSize, int pageNumber) throws ListException {
 
 	}
 
@@ -106,26 +109,26 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 
 	public abstract String getOrderFields();
 
-	public abstract void doBeforeFilter(E filter, G be, HttpServletRequest request, HttpServletResponse response);
+	public abstract void doBeforeFilter(E filter, G be, HttpServletRequest request, HttpServletResponse response, StringBuilder whereCondition);
 
 	public int getPageSize() {
-		return PageSize;
+		return this.PageSize;
 	}
 
 	public void setPageSize(int pageSize) {
-		PageSize = pageSize;
+		this.PageSize = pageSize;
 	}
 
 	public int getPageNumber() {
-		return PageNumber;
+		return this.PageNumber;
 	}
 
 	public void setPageNumber(int pageNumber) {
-		PageNumber = pageNumber;
+		this.PageNumber = pageNumber;
 	}
 
 	public String getOpcao() {
-		return opcao;
+		return this.opcao;
 	}
 
 	public void setOpcao(String opcao) {
@@ -133,26 +136,26 @@ public abstract class BaseConsultaAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public String getPesquisarPor() {
-		return PesquisarPor;
+		return this.PesquisarPor == null ? "" : this.PesquisarPor;
 	}
 
 	public void setPesquisarPor(String pesquisarPor) {
-		PesquisarPor = pesquisarPor;
+		this.PesquisarPor = pesquisarPor;
 	}
 
 	public String getParametroPesquisa() {
-		return ParametroPesquisa;
+		return this.ParametroPesquisa;
 	}
 
 	public void setParametroPesquisa(String parametroPesquisa) {
-		ParametroPesquisa = parametroPesquisa;
+		this.ParametroPesquisa = parametroPesquisa;
 	}
 
 	public DAOManager getManager() {
-		if (manager == null) {
-			manager = DAOManager.getDAOManager();
+		if (this.manager == null) {
+			this.manager = DAOManager.getInstance();
 		}
-		return manager;
+		return this.manager;
 	}
 
 	public void setManager(DAOManager manager) {

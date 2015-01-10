@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/velocity-1.7.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/antlr-2.7.5.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/avalon-logkit-2.1.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/jdom-1.0.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/log4j-1.2.12.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/maven-ant-tasks-2.0.9.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/oro-2.0.8.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/servletapi-2.3.jar"/>
+	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/werken-xpath-0.9.4.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dao-postgresql"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/minhalanchonete-model"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

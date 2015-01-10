@@ -27,7 +27,7 @@ public class EmailValidator extends BaseValidator {
 
 			// So valida se a string nao for nula e nem vazia
 			if (string != null && !string.trim().equals("")) {
-				if (!validate(string)) {
+				if (!EmailValidator.validate(string)) {
 					throw new ValidationBeException("Campo " + ValidatorUtils.getFieldDescription(f) + " não é um email válido!", f.getName());
 				}
 			}
@@ -35,7 +35,7 @@ public class EmailValidator extends BaseValidator {
 	}
 
 	public static boolean validate(final String hex) {
-		Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+		Pattern pattern = Pattern.compile(EmailValidator.EMAIL_PATTERN);
 		Matcher matcher = pattern.matcher(hex);
 		return matcher.matches();
 

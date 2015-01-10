@@ -7,6 +7,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -28,9 +29,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 
+import br.com.orlandoburli.framework.core.dao.DaoUtils;
 import br.com.orlandoburli.framework.core.vo.BaseVo;
-
-import com.google.gson.Gson;
 
 public final class Utils {
 
@@ -39,19 +39,19 @@ public final class Utils {
 	static final int TAMANHO_BUFFER = 2048; // 2kb
 
 	public static String parseClassName(String directory, String name) {
-		name = name.substring(directory.length(), name.length() - DOT_CLASS.length());
+		name = name.substring(directory.length(), name.length() - Utils.DOT_CLASS.length());
 		name = name.replaceAll("/|\\\\", ".");
 		name = name.replaceAll("\\.\\.", ".");
 		return name;
 	}
 
 	public static String getFacadeName(String appdir, String facadeName, ServletContext context) {
-		String webinfdir = appdir + WEBINF_CLASSES_DIRECTORY;
+		String webinfdir = appdir + Utils.WEBINF_CLASSES_DIRECTORY;
 
-		List<File> files = findFiles(new File(webinfdir), facadeName);
+		List<File> files = Utils.findFiles(new File(webinfdir), facadeName);
 
 		if (files.size() > 0) {
-			return parseClassName(webinfdir, files.get(0).getAbsolutePath());
+			return Utils.parseClassName(webinfdir, files.get(0).getAbsolutePath());
 		}
 		return "";
 	}
@@ -59,16 +59,13 @@ public final class Utils {
 	public static List<File> findFiles(File startingDirectory, final String pattern) {
 		List<File> files = new ArrayList<File>();
 		if (startingDirectory.isDirectory()) {
-			File[] sub = startingDirectory.listFiles(new FileFilter() {
-				@Override
-				public boolean accept(File pathname) {
-					String finalString = pathname.getName().substring(pathname.getName().lastIndexOf("/") + 1);
-					return pathname.isDirectory() || finalString.equalsIgnoreCase(pattern);
-				}
+			File[] sub = startingDirectory.listFiles((FileFilter) pathname -> {
+				String finalString = pathname.getName().substring(pathname.getName().lastIndexOf("/") + 1);
+				return pathname.isDirectory() || finalString.equalsIgnoreCase(pattern);
 			});
 			for (File fileDir : sub) {
 				if (fileDir.isDirectory()) {
-					files.addAll(findFiles(fileDir, pattern));
+					files.addAll(Utils.findFiles(fileDir, pattern));
 				} else {
 					files.add(fileDir);
 				}
@@ -84,11 +81,50 @@ public final class Utils {
 	}
 
 	public static String voToJson(Object obj) {
-		return new Gson().toJson(obj);
+
+		if (obj == null) {
+			return "";
+		}
+
+		StringBuilder sb = new StringBuilder("{");
+
+		for (Method m : obj.getClass().getDeclaredMethods()) {
+			if (m.getName().startsWith("get") || m.getName().startsWith("is")) {
+				Object value = DaoUtils.getValue(m, obj);
+
+				String fieldName = m.getName();
+
+				if (fieldName.startsWith("get")) {
+					fieldName = fieldName.substring(3, 4).toLowerCase() + fieldName.substring(4);
+				} else if (fieldName.startsWith("is")) {
+					fieldName = fieldName.substring(2, 3).toLowerCase() + fieldName.substring(3);
+				}
+
+				if (value instanceof BaseVo && value != null) {
+					sb.append("\"" + fieldName + "\":" + Utils.voToJson(value) + ",");
+				} else if (value instanceof Boolean) {
+					sb.append("\"" + fieldName + "\":" + (value == null ? "" : value) + ",");
+				} else if (value instanceof Calendar) {
+					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+					Calendar cal = (Calendar) value;
+					sb.append("\"" + fieldName + "\":\"" + (cal == null ? "" : sdf.format(Utils.calendarToDate(cal))) + "\",");
+				} else {
+					sb.append("\"" + fieldName + "\":\"" + (value == null ? "" : value) + "\",");
+				}
+			}
+		}
+
+		sb.delete(sb.length() - 1, sb.length());
+
+		// return new Gson().toJson(obj);
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	public static String voToXml(Object vo) {
-		return voToXml(vo, true);
+		return Utils.voToXml(vo, true);
 	}
 
 	public static String voToXml(List<?> list, int count) {
@@ -138,7 +174,7 @@ public final class Utils {
 				Object value = field.get(vo);
 
 				if (value instanceof BaseVo) {
-					sb.append("<" + field.getName() + ">" + voToXml(value, false) + "</" + field.getName() + ">");
+					sb.append("<" + field.getName() + ">" + Utils.voToXml(value, false) + "</" + field.getName() + ">");
 					// } else if ((value instanceof List) && (value != null)) {
 					// sb.append("<" + field.getName() + ">");
 					// for(Object object : (List) value) {
@@ -160,7 +196,7 @@ public final class Utils {
 	}
 
 	public static String voToXml(List<?> list) {
-		return voToXml(list, true);
+		return Utils.voToXml(list, true);
 	}
 
 	public static String voToXml(List<?> list, boolean headerXml) {
@@ -169,7 +205,7 @@ public final class Utils {
 			sb.append("<?xml version=\"1.0\" encoding=\"iso-8859-1\"?><list>");
 		}
 		for (Object vo : list) {
-			sb.append(voToXml(vo, false));
+			sb.append(Utils.voToXml(vo, false));
 		}
 		if (headerXml) {
 			sb.append("</list>");
@@ -179,7 +215,7 @@ public final class Utils {
 
 	/**
 	 * Monta XML so dos itens
-	 * 
+	 *
 	 * @param vo
 	 * @return
 	 */
@@ -192,7 +228,7 @@ public final class Utils {
 				Object value = field.get(vo);
 
 				if (value instanceof BaseVo) {
-					sb.append("<" + field.getName() + ">" + voToXml(value, false) + "</" + field.getName() + ">");
+					sb.append("<" + field.getName() + ">" + Utils.voToXml(value, false) + "</" + field.getName() + ">");
 				} else {
 					sb.append("<" + field.getName() + "><![CDATA[" + (value == null ? "" : value.toString()) + "]]></" + field.getName() + ">");
 				}
@@ -235,7 +271,7 @@ public final class Utils {
 
 	public static Date getToday() {
 		Calendar cal = Calendar.getInstance();
-		Date date = Date.valueOf(cal.get(Calendar.YEAR) + "-" + fillString(cal.get(Calendar.MONTH) + 1, "0", 2, 1) + "-" + fillString(cal.get(Calendar.DAY_OF_MONTH), "0", 2, 1));
+		Date date = Date.valueOf(cal.get(Calendar.YEAR) + "-" + Utils.fillString(cal.get(Calendar.MONTH) + 1, "0", 2, 1) + "-" + Utils.fillString(cal.get(Calendar.DAY_OF_MONTH), "0", 2, 1));
 		return date;
 	}
 
@@ -246,10 +282,13 @@ public final class Utils {
 	}
 
 	public static Calendar toCalendar(String date) {
-		return toCalendar(date, "dd/MM/yyyy");
+		return Utils.toCalendar(date, "dd/MM/yyyy");
 	}
 
 	public static Calendar toCalendar(String date, String format) {
+		if (date == null) {
+			return null;
+		}
 		Calendar cal = Calendar.getInstance();
 
 		SimpleDateFormat sdf = new SimpleDateFormat(format);
@@ -258,6 +297,7 @@ public final class Utils {
 			cal.setTime(parse);
 		} catch (ParseException e) {
 			e.printStackTrace();
+			return null;
 		}
 
 		return cal;
@@ -289,7 +329,7 @@ public final class Utils {
 					retorno = field.get(objetoaux);
 
 					if (index >= 0) {
-						retorno = getproperty(retorno, property.substring(index + 1));
+						retorno = Utils.getproperty(retorno, property.substring(index + 1));
 					}
 					return retorno;
 				}
@@ -342,11 +382,11 @@ public final class Utils {
 		BigDecimal valorCerto = new BigDecimal(valor.toString());
 		int multiplicador = Double.valueOf((Math.pow(10, decimais))).intValue();
 		valorCerto = valorCerto.multiply(new BigDecimal(multiplicador));
-		return fillString(Integer.toString(valorCerto.intValue()), "0", decimais, 1);
+		return Utils.fillString(Integer.toString(valorCerto.intValue()), "0", decimais, 1);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param value
 	 * @param fillWith
 	 * @param size
@@ -426,7 +466,7 @@ public final class Utils {
 
 	public static void compactar(String arqSaida, List<String> arquivos) {
 		int i, cont;
-		byte[] dados = new byte[TAMANHO_BUFFER];
+		byte[] dados = new byte[Utils.TAMANHO_BUFFER];
 		BufferedInputStream origem = null;
 		FileInputStream streamDeEntrada = null;
 		FileOutputStream destino = null;
@@ -439,11 +479,11 @@ public final class Utils {
 				File arquivo = new File(arquivos.get(i));
 				if (arquivo.isFile() && !(arquivo.getName()).equals(arqSaida)) {
 					streamDeEntrada = new FileInputStream(arquivo);
-					origem = new BufferedInputStream(streamDeEntrada, TAMANHO_BUFFER);
+					origem = new BufferedInputStream(streamDeEntrada, Utils.TAMANHO_BUFFER);
 					entry = new ZipEntry(arquivos.get(i).substring(arquivos.get(i).lastIndexOf(File.separator) + 1));
 					saida.putNextEntry(entry);
 
-					while ((cont = origem.read(dados, 0, TAMANHO_BUFFER)) != -1) {
+					while ((cont = origem.read(dados, 0, Utils.TAMANHO_BUFFER)) != -1) {
 						saida.write(dados, 0, cont);
 					}
 					origem.close();
@@ -543,6 +583,25 @@ public final class Utils {
 		byte[] parseBase64Binary = DatatypeConverter.parseBase64Binary(valor);
 
 		return new String(parseBase64Binary);
+	}
+
+	public static String splitAndWhereIn(String source, String separator, boolean quote) {
+
+		String result = "";
+
+		String[] itens = source.split(separator);
+
+		for (String s : itens) {
+			if (quote) {
+				result += "'" + s + "', ";
+			} else {
+				result += s + ", ";
+			}
+		}
+
+		result = result.substring(0, result.length() - 2);
+
+		return result;
 	}
 
 }

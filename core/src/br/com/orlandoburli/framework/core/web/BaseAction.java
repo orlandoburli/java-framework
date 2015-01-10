@@ -21,18 +21,18 @@ public class BaseAction implements Serializable {
 	private HttpServletResponse response;
 	private ServletContext context;
 	private String methodName;
-	
+
 	public void forward(String url) {
-		dispatch();
+		this.dispatch();
 
 		if (!url.startsWith("/")) {
 			url = "/" + url;
 		}
-		
-		RequestDispatcher dispatcher = request.getRequestDispatcher(url);
-		
+
+		RequestDispatcher dispatcher = this.request.getRequestDispatcher(url);
+
 		try {
-			dispatcher.forward(request, response);
+			dispatcher.forward(this.request, this.response);
 		} catch (ServletException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -41,10 +41,10 @@ public class BaseAction implements Serializable {
 	}
 
 	public void redir(String url) {
-		dispatch();
-		
+		this.dispatch();
+
 		try {
-			response.sendRedirect(url);
+			this.response.sendRedirect(url);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -56,7 +56,7 @@ public class BaseAction implements Serializable {
 		ofilter.setContext(this.context);
 		ofilter.setRequest(this.request);
 		ofilter.setResponse(this.response);
-		
+
 		try {
 			if (!ofilter.doFilter(this)) {
 				return;
@@ -68,14 +68,14 @@ public class BaseAction implements Serializable {
 
 	public Object getAttribute(String key) {
 		if (this.request != null) {
-			if (request.getMethod().equalsIgnoreCase("POST")) {
-				if (request.getAttribute(key) != null) {
-					return request.getAttribute(key);
+			if (this.request.getMethod().equalsIgnoreCase("POST")) {
+				if (this.request.getAttribute(key) != null) {
+					return this.request.getAttribute(key);
 				} else {
-					return request.getParameter(key);
+					return this.request.getParameter(key);
 				}
 			} else {
-				return request.getParameter(key);
+				return this.request.getParameter(key);
 			}
 		} else {
 			return null;
@@ -88,7 +88,7 @@ public class BaseAction implements Serializable {
 	 * @param value
 	 */
 	public void writeIso88591(String value) {
-		write(value, "ISO-8859-1");
+		this.write(value, "ISO-8859-1");
 	}
 
 	/**
@@ -99,8 +99,8 @@ public class BaseAction implements Serializable {
 	 */
 	public void write(String value, String Encoding) {
 		try {
-			response.setCharacterEncoding(Encoding);
-			response.getWriter().write(value);
+			this.response.setCharacterEncoding(Encoding);
+			this.response.getWriter().write(value);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -112,24 +112,24 @@ public class BaseAction implements Serializable {
 	 * @param value
 	 */
 	public void write(String value) {
-		write(value, "UTF-8");
+		this.write(value, "UTF-8");
 	}
 
 	public void writeErrorMessage(String errormessage) {
-		writeErrorMessage(errormessage, null);
+		this.writeErrorMessage(errormessage, null);
 	}
 
 	public void writeErrorMessage(String errormessage, String fieldName) {
 		RetornoAction retorno = new RetornoAction(false, errormessage, fieldName);
-		write(Utils.voToJson(retorno));
+		this.write(Utils.voToJson(retorno));
 	}
 
 	public void setAttribute(String key, Object value) {
 		if (this.request != null) {
-			request.setAttribute(key, value);
+			this.request.setAttribute(key, value);
 		}
 	}
-	
+
 	public String getActionName() {
 		return this.getClass().getSimpleName().replace("Action", "").toLowerCase();
 	}
@@ -139,7 +139,7 @@ public class BaseAction implements Serializable {
 	}
 
 	public HttpServletRequest getRequest() {
-		return request;
+		return this.request;
 	}
 
 	public void setRequest(HttpServletRequest request) {
@@ -147,7 +147,7 @@ public class BaseAction implements Serializable {
 	}
 
 	public HttpServletResponse getResponse() {
-		return response;
+		return this.response;
 	}
 
 	public void setResponse(HttpServletResponse response) {
@@ -155,7 +155,7 @@ public class BaseAction implements Serializable {
 	}
 
 	public ServletContext getContext() {
-		return context;
+		return this.context;
 	}
 
 	public void setContext(ServletContext context) {
@@ -163,7 +163,7 @@ public class BaseAction implements Serializable {
 	}
 
 	public String getMethodName() {
-		return methodName;
+		return this.methodName;
 	}
 
 	public void setMethodName(String methodName) {

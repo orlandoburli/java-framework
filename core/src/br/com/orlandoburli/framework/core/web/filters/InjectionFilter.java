@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.Locale;
 
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.Precision;
+import br.com.orlandoburli.framework.core.log.Log;
 import br.com.orlandoburli.framework.core.utils.Utils;
 
 /**
@@ -41,32 +42,28 @@ public class InjectionFilter extends BaseFilter {
 		}
 
 		// Injecao pelos dados de sessao
-		Enumeration<?> enumSession = getRequest().getSession().getAttributeNames();
+		Enumeration<?> enumSession = this.getRequest().getSession().getAttributeNames();
 		while (enumSession.hasMoreElements()) {
 			String campo = enumSession.nextElement().toString();
-			Object value = getRequest().getSession().getAttribute(campo);
+			Object value = this.getRequest().getSession().getAttribute(campo);
 			setproperty(vo, campo, value); // Seta a propriedade
 											// recursivamente
 		}
 
 		// Injecao pelos dados de parametros de request
-		Enumeration<?> enumParm = getRequest().getParameterNames();
+		Enumeration<?> enumParm = this.getRequest().getParameterNames();
 		while (enumParm.hasMoreElements()) {
 			String campo = enumParm.nextElement().toString();
-			String[] value = getRequest().getParameterValues(campo);
-			if (value.length > 1) {
-				setproperty(vo, campo, value); // Seta a propriedade como
-												// array de strings
-			} else if (value.length == 1) {
-				setproperty(vo, campo, value[0]);
-			}
+
+			String value = this.getRequest().getParameter(campo);
+			setproperty(vo, campo, value);
 		}
 
 		// Injecao pelos dados de atributos
-		Enumeration<?> enumAtt = getRequest().getAttributeNames();
+		Enumeration<?> enumAtt = this.getRequest().getAttributeNames();
 		while (enumAtt.hasMoreElements()) {
 			String campo = enumAtt.nextElement().toString();
-			Object value = getRequest().getAttribute(campo);
+			Object value = this.getRequest().getAttribute(campo);
 			setproperty(vo, campo, value); // Seta a propriedade
 											// recursivamente
 		}
@@ -134,6 +131,8 @@ public class InjectionFilter extends BaseFilter {
 	 */
 	protected static void setField(Object container, Field field, Object value) {
 
+		Log.fine("setField container: " + container.getClass().getName() + " field: " + field.getName() + " value: " + value.toString());
+
 		try {
 			if (field.getType().equals(String.class)) {
 				field.set(container, value.toString());
@@ -163,8 +162,9 @@ public class InjectionFilter extends BaseFilter {
 						// mascara += "00";
 						// }
 
-//						DecimalFormat formater = new DecimalFormat();
-//						NumberFormat formater = NumberFormat.getCurrencyInstance(Locale.US);
+						// DecimalFormat formater = new DecimalFormat();
+						// NumberFormat formater =
+						// NumberFormat.getCurrencyInstance(Locale.US);
 						// formater.setCurrency(Currency.getInstance(new
 						// Locale("pt", "BR")));
 
@@ -172,11 +172,12 @@ public class InjectionFilter extends BaseFilter {
 							field.set(container, value);
 						} else {
 							if (field.getType().equals(BigDecimal.class)) {
-//								formater.setParseBigDecimal(true);
+								// formater.setParseBigDecimal(true);
 								// new
 								// BigDecimal(formater.parse(value.toString(),
 								// new ParsePosition(0)));
-//								BigDecimal valor = (BigDecimal) formater.parse(valorString);
+								// BigDecimal valor = (BigDecimal)
+								// formater.parse(valorString);
 								BigDecimal valor = new BigDecimal(valorString);
 								if (precision != null) {
 									valor = valor.setScale(precision.value(), BigDecimal.ROUND_CEILING);
@@ -244,9 +245,10 @@ public class InjectionFilter extends BaseFilter {
 					time = Timestamp.valueOf(value.toString());
 				}
 				field.set(container, time);
-			} else if (field.getType().equals(String[].class) && value.getClass().equals(String.class)) { // Para
-																											// arrays
+			} else if (field.getType().equals(String[].class) && value.getClass().equals(String.class)) {
 				field.set(container, new String[] { value.toString() });
+			} else if (field.getType().equals(String[].class) && value.getClass().equals(String[].class)) {
+				field.set(container, value);
 			} else {
 				try {
 					field.set(container, value); // Tenta setar como object
@@ -255,7 +257,7 @@ public class InjectionFilter extends BaseFilter {
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}

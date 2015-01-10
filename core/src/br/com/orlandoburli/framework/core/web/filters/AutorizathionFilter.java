@@ -1,5 +1,7 @@
 package br.com.orlandoburli.framework.core.web.filters;
 
+import java.lang.reflect.Method;
+
 import br.com.orlandoburli.framework.core.log.Log;
 import br.com.orlandoburli.framework.core.utils.Constants;
 import br.com.orlandoburli.framework.core.web.BaseAction;
@@ -10,6 +12,7 @@ public class AutorizathionFilter extends BaseFilter {
 
 	@Override
 	public boolean doFilter(Object obj) throws IllegalArgumentException, IllegalAccessException {
+
 		if (!(obj instanceof BaseAction)) {
 			return true;
 		}
@@ -30,18 +33,16 @@ public class AutorizathionFilter extends BaseFilter {
 			return false;
 		}
 
-		// try {
-		// Method method = action.getClass().getMethod(action.getMethodName(),
-		// new Class<?>[] {});
-		// if (method.getAnnotation(IgnoreMethodAuthentication.class) !=
-		// null) {
-		// return true;
-		// }
-		// } catch (SecurityException e) {
-		// e.printStackTrace();
-		// } catch (NoSuchMethodException e) {
-		// e.printStackTrace();
-		// }
+		try {
+			Method method = action.getClass().getMethod(action.getMethodName(), new Class<?>[] {});
+			if (method.getAnnotation(IgnoreMethodAuthentication.class) != null) {
+				return true;
+			}
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
 
 		return true;
 	}

@@ -1,0 +1,14 @@
+## Geração da classe Dao
+#set ($dao = $class.getSimpleName().replace("Vo", "Dao"))
+package $class.getPackage().getName().replace(".vo.", ".dao.");
+
+import br.com.orlandoburli.framework.core.dao.BaseCadastroDao;
+import br.com.orlandoburli.framework.core.dao.DAOManager;
+import $class.getName();
+
+public class $dao extends BaseCadastroDao<$class.getSimpleName()> {
+
+	public $dao(DAOManager manager) {
+		super(manager);
+	}
+}
