@@ -16,6 +16,6 @@
 	<classpathentry kind="lib" path="/Users/orlandoburli/Documents/Projetos/java-framework/templates/velocity-1.7/lib/werken-xpath-0.9.4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dao-postgresql"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/minhalanchonete-model"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/minhasvendas-model"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

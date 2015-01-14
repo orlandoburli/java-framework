@@ -1,0 +1,107 @@
+## Geração da classe Consulta Action
+##
+##
+## Definicao de variáveis
+##
+#set ($vo = $class.getSimpleName())
+#set ($dao = $class.getSimpleName().replace("Vo", "Dao"))
+#set ($be = $class.getSimpleName().replace("Vo", "Be"))
+#set ($action = $class.getSimpleName().replace("Vo", "ConsultaAction"))
+#set ($voLength = $vo.length() - 2) 
+#set ($simpleVo = $vo.substring(0, $voLength).toLowerCase())
+#set ($pageJsp = "web/pages/" + $grupo + "/" + $simpleVo + "/" + $simpleVo + "consulta.jsp") 
+#set ($pageJspGrid = "web/pages/" + $grupo + "/" + $simpleVo + "/" + $simpleVo + "consulta_grid.jsp") 
+#set ($fields = $class.getDeclaredFields())
+#set ($temAtivo = false)
+##
+##
+##
+package $packageActions;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import br.com.orlandoburli.framework.core.web.BaseConsultaAction;
+import $class.getName().replace(".vo.", ".be.").replace("Vo", "Be");
+import $class.getName().replace(".vo.", ".dao.").replace("Vo", "Dao");
+import $class.getName();
+
+public class $action extends BaseConsultaAction<$vo, $dao, $be> {
+
+	private static final long serialVersionUID = 1L;
+
+## Verifica se tem o field "ativo"
+#foreach ($field in $fields)
+#if ( $field.getName() == "ativo" )
+#set ($temAtivo = true)
+#end
+#end
+##
+#if ($temAtivo)
+	private String somenteAtivos;
+
+#end
+	@Override
+	public String getJspConsulta() {
+		return "$pageJsp";
+	}
+	
+	@Override
+	public String getJspGridConsulta() {
+		return "$pageJspGrid";
+	}
+	
+	@Override
+	public String getOrderFields() {
+		return null;
+	}
+	
+	@Override
+	public void doBeforeFilter($vo filter, $be be, HttpServletRequest request, HttpServletResponse response, StringBuilder whereCondition) {
+		if (this.getParametroPesquisa() != null) {
+#set ($first = true)
+#foreach ($field in $fields)
+#if ( $ValidatorUtils.isField( $field ) )
+##
+## Busca o metodo setter do field
+#set ($setter = "set" + $field.getName().substring(0, 1).toUpperCase() + $field.getName().substring(1))
+#if ( $field.getName() != "ativo" )
+#if ($first)
+#set ($first = false)
+			if (this.getParametroPesquisa().equalsIgnoreCase("$field.getName()")) {
+#else 
+			else if (this.getParametroPesquisa().equalsIgnoreCase("$field.getName()")) {
+#end
+#if ($field.getType().getSimpleName().equals("String"))
+				filter.${setter}("%" + this.getPesquisarPor() + "%");
+#end
+#if ($field.getType().getSimpleName().equals("Integer"))
+				Integer codigo = null;
+				try {
+					codigo = Integer.parseInt(this.getPesquisarPor());
+				} catch (NumberFormatException e) {
+				}
+				filter.${setter}(codigo);
+#end
+			}
+#end
+#end
+#end
+		}
+#if ($temAtivo)
+		if (this.getSomenteAtivos() != null && !this.getSomenteAtivos().trim().equals("")) {
+			filter.setAtivo(this.getSomenteAtivos());
+		}
+#end
+	}
+#if ($temAtivo)
+
+	public String getSomenteAtivos() {
+		return this.somenteAtivos;
+	}
+
+	public void setSomenteAtivos(String somenteAtivos) {
+		this.somenteAtivos = somenteAtivos;
+	}
+#end
+}

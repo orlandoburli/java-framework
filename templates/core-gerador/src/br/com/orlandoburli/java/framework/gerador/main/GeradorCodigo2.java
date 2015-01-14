@@ -12,9 +12,9 @@ import org.apache.velocity.context.Context;
 
 import br.com.orlandoburli.framework.core.be.validation.ValidatorUtils;
 import br.com.orlandoburli.framework.core.utils.Utils;
-import br.com.orlandoburli.minhasvendas.model.vo.estoque.ProdutoVo;
+import br.com.orlandoburli.minhasvendas.model.vo.venda.VendedorVo;
 
-public class GeradorCodigo {
+public class GeradorCodigo2 {
 
 	public static void main(String[] args) {
 		// Source folder para o projeto Model
@@ -36,7 +36,7 @@ public class GeradorCodigo {
 		// String packageWeb = "br.com.orlandoburli.pmo.web.actions";
 		String packageWeb = "br.com.orlandoburli.minhasvendas.web.actions";
 		// Classe Vo de base
-		Class<?> voClass = ProdutoVo.class;
+		Class<?> voClass = VendedorVo.class;
 
 		for (int i = 0; i < 200; i++) {
 			System.out.print("-");
@@ -66,11 +66,13 @@ public class GeradorCodigo {
 		String fileDao = sourceModelFolder + voClass.getPackage().getName().replace(".vo.", ".dao.").replace(".", "/") + "/" + voClass.getSimpleName().replace("Vo", "Dao") + ".java";
 		String fileBe = sourceModelFolder + voClass.getPackage().getName().replace(".vo.", ".be.").replace(".", "/") + "/" + voClass.getSimpleName().replace("Vo", "Be") + ".java";
 
+		boolean overWrite = false;
+
 		// Dao
-		executeTemplate(ve, context, "templates/generate-dao.vm", fileDao);
+		executeTemplate(ve, context, "templates/generate-dao.vm", fileDao, overWrite);
 
 		// Be
-		executeTemplate(ve, context, "templates/generate-be.vm", fileBe);
+		executeTemplate(ve, context, "templates/generate-be.vm", fileBe, overWrite);
 
 		String grupo = voClass.getPackage().getName().substring(voClass.getPackage().getName().indexOf(".vo.")).replace(".vo.", "");
 
@@ -83,23 +85,23 @@ public class GeradorCodigo {
 
 		// Cadastro Action
 
-		executeTemplate(ve, context, "templates/generate-cadastro-action.vm", fileCadastroAction);
+		executeTemplate(ve, context, "templates/generate-cadastro-action.vm", fileCadastroAction, overWrite);
 
 		// Consulta Action
 
-		executeTemplate(ve, context, "templates/generate-consulta-action.vm", fileConsultaAction);
+		executeTemplate(ve, context, "templates/generate-consulta-action.vm", fileConsultaAction, overWrite);
 
 		String fileCadastroJsp = webFolder + grupo + "/" + voClass.getSimpleName().replace("Vo", "").toLowerCase() + "/" + voClass.getSimpleName().replace("Vo", "cadastro.jsp").toLowerCase();
 		String fileConsultaJsp = webFolder + grupo + "/" + voClass.getSimpleName().replace("Vo", "").toLowerCase() + "/" + voClass.getSimpleName().replace("Vo", "consulta.jsp").toLowerCase();
 		String fileConsultaJspGrid = webFolder + grupo + "/" + voClass.getSimpleName().replace("Vo", "").toLowerCase() + "/" + voClass.getSimpleName().replace("Vo", "consulta_grid.jsp").toLowerCase();
 
 		// Cadastro Jsp
-		executeTemplate(ve, context, "templates/generate-cadastro-jsp.vm", fileCadastroJsp);
+		executeTemplate(ve, context, "templates/generate-cadastro-jsp.vm", fileCadastroJsp, overWrite);
 
 		// Consulta Jsp
 
-		executeTemplate(ve, context, "templates/generate-consulta-jsp.vm", fileConsultaJsp);
-		executeTemplate(ve, context, "templates/generate-consulta-grid-jsp.vm", fileConsultaJspGrid);
+		executeTemplate(ve, context, "templates/generate-consulta-jsp.vm", fileConsultaJsp, overWrite);
+		executeTemplate(ve, context, "templates/generate-consulta-grid-jsp.vm", fileConsultaJspGrid, overWrite);
 
 		for (int i = 0; i < 200; i++) {
 			System.out.print("-");
@@ -114,7 +116,7 @@ public class GeradorCodigo {
 		System.out.println();
 	}
 
-	private static void executeTemplate(VelocityEngine ve, Context context, String templateName, String filePath) {
+	private static void executeTemplate(VelocityEngine ve, Context context, String templateName, String filePath, boolean overwrite) {
 
 		Template t = ve.getTemplate(templateName);
 
@@ -136,6 +138,11 @@ public class GeradorCodigo {
 			}
 
 			File f = new File(filePath);
+
+			if (f.exists() && overwrite) {
+				f.delete();
+			}
+
 			if (!f.exists()) {
 
 				System.out.println("Escrevendo arquivo " + f.getName() + " na pasta " + f.getPath() + "...");

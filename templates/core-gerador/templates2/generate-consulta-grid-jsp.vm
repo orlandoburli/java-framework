@@ -1,0 +1,88 @@
+## Geração da classe Consulta Action
+##
+##
+## Definicao de variáveis
+##
+#set ($vo = $class.getSimpleName())
+#set ($dao = $class.getSimpleName().replace("Vo", "Dao"))
+#set ($be = $class.getSimpleName().replace("Vo", "Be"))
+#set ($action = $class.getSimpleName().replace("Vo", "ConsultaAction"))
+#set ($voLength = $vo.length() - 2) 
+#set ($simpleVo = $vo.substring(0, $voLength).toLowerCase())
+#set ($pageJsp = "web/pages/" + $grupo + "/" + $simpleVo + "/" + $simpleVo + "consulta.jsp") 
+#set ($pageJspGrid = "web/pages/" + $grupo + "/" + $simpleVo + "/" + $simpleVo + "consulta_grid.jsp") 
+#set ($fields = $class.getDeclaredFields())
+##
+##
+##
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+
+<style type="text/css">
+table thead td:nth-child(1) {
+	width: 60px;
+}
+
+table thead td:nth-child(1) {
+	text-align: right;
+}
+
+table tbody tr td:nth-child(1) {
+	text-align: right;
+}
+</style>
+
+
+<table data-page-count="${pageCount}" class="table">
+	<thead>
+		<tr>
+#set ($fields = $class.getDeclaredFields())
+##
+##
+#foreach($field in $fields)
+#if ( $ValidatorUtils.isField($field) )
+			<td>$ValidatorUtils.getFieldDescription($field)</td>
+#end
+#end
+##
+##
+		</tr>
+	</thead>
+
+	<tfoot>
+		<tr>
+			<td colspan="4">P&aacute;gina ${pageNumber} de ${pageCount}</td>
+		</tr>
+	</tfoot>
+	
+	<tbody>
+		<c:forEach items="${listSource}" var="vo">
+			<tr
+#set ($dataId = "")
+##idProjeto=${vo.id}
+
+#foreach($field in $fields)
+#if ( $ValidatorUtils.isKey($field))
+#set ($fieldName = $field.getName())
+#set ($dataId = $dataId + "$fieldName=${ vo.$fieldName}")
+#end
+#end
+
+				data-id="$dataId">
+#foreach($field in $fields)
+#if ( $ValidatorUtils.isField($field) )
+#set ($fieldName = $field.getName())
+#if ( $ValidatorUtils.isDomain( $field ) )
+			<td>${ vo.${fieldName}Desc }</td>
+#else
+			<td>${ vo.$fieldName }</td>
+#end
+#end
+#end
+			</tr>
+		</c:forEach>
+	</tbody>
+
+</table>
+
+

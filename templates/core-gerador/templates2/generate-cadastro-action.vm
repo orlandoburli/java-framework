@@ -1,0 +1,42 @@
+## Geração da classe Cadastro Action
+##
+##
+## Definicao de variáveis
+##
+#set ($vo = $class.getSimpleName())
+#set ($dao = $class.getSimpleName().replace("Vo", "Dao"))
+#set ($be = $class.getSimpleName().replace("Vo", "Be"))
+#set ($action = $class.getSimpleName().replace("Vo", "CadastroAction"))
+#set ($voLength = $vo.length() - 2) 
+#set ($simpleVo = $vo.substring(0, $voLength).toLowerCase())
+#set ($pageJsp = "web/pages/" + $grupo + "/" + $simpleVo + "/" + $simpleVo + "cadastro.jsp") 
+##
+##
+##
+package $packageActions;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import br.com.orlandoburli.framework.core.be.exceptions.persistence.ListException;
+import br.com.orlandoburli.framework.core.dao.DAOManager;
+import br.com.orlandoburli.framework.core.web.BaseCadastroAction;
+import $class.getName().replace(".vo.", ".be.").replace("Vo", "Be");
+import $class.getName().replace(".vo.", ".dao.").replace("Vo", "Dao");
+import $class.getName();
+
+public class $action extends BaseCadastroAction<$vo, $dao, $be> {
+
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	public String getJspCadastro() {
+		return "$pageJsp";
+	}
+	
+## TODO Verificar necessidade de auto gerar codigo aqui
+	@Override
+	public void doBeforeVisualizar(HttpServletRequest request, HttpServletResponse response, $vo vo, $be be, DAOManager manager) throws ListException {
+		super.doBeforeVisualizar(request, response, vo, be, manager);
+	}
+}

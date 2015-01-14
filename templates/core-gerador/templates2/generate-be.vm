@@ -1,0 +1,17 @@
+## Geração da classe Be
+#set ($vo = $class.getSimpleName())
+#set ($dao = $class.getSimpleName().replace("Vo", "Dao"))
+#set ($be = $class.getSimpleName().replace("Vo", "Be"))
+package $class.getPackage().getName().replace(".vo.", ".be.");
+
+import br.com.orlandoburli.framework.core.be.BaseBe;
+import br.com.orlandoburli.framework.core.dao.DAOManager;
+import $class.getName().replace(".vo.", ".dao.").replace("Vo", "Dao");
+import $class.getName();
+
+public class $be extends BaseBe<$vo, $dao> {
+
+	public $be(DAOManager manager) {
+		super(manager);
+	}
+}
