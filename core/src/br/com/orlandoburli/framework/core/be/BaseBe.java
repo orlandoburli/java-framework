@@ -1,13 +1,13 @@
 package br.com.orlandoburli.framework.core.be;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.List;
 
 import br.com.orlandoburli.framework.core.be.exceptions.BeException;
 import br.com.orlandoburli.framework.core.be.exceptions.persistence.DeleteBeException;
 import br.com.orlandoburli.framework.core.be.exceptions.persistence.InsertBeException;
 import br.com.orlandoburli.framework.core.be.exceptions.persistence.ListException;
-import br.com.orlandoburli.framework.core.be.exceptions.persistence.SaveBeException;
 import br.com.orlandoburli.framework.core.be.exceptions.persistence.UpdateBeException;
 import br.com.orlandoburli.framework.core.be.validation.ValidatorUtils;
 import br.com.orlandoburli.framework.core.dao.BaseCadastroDao;
@@ -16,6 +16,7 @@ import br.com.orlandoburli.framework.core.dao.DaoUtils;
 import br.com.orlandoburli.framework.core.dao.exceptions.DAOException;
 import br.com.orlandoburli.framework.core.log.Log;
 import br.com.orlandoburli.framework.core.vo.BaseVo;
+import br.com.orlandoburli.framework.core.vo.JsonItemVo;
 
 public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
@@ -30,7 +31,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
 	/**
 	 * Valida, Transforma e persiste um objeto.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto a ser validado, transformado e persistido.
 	 * @return O objeto passado no parametro <b>vo</b>, transformado e
@@ -84,10 +85,10 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
 	/**
 	 * Remove um objeto do banco de dados.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto a ser removido.
-	 * @throws BeException 
+	 * @throws BeException
 	 */
 	public void remove(E vo) throws BeException {
 		doBeforeDelete(vo);
@@ -106,7 +107,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
 	/**
 	 * Retorna um objeto do banco de dados.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto com os atributos de chave, devidamente setados.
 	 * @return Objeto vo preenchido com os dados do banco de dados, se
@@ -126,7 +127,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
 	/**
 	 * Retorna um objeto do banco de dados.
-	 * 
+	 *
 	 * @param key
 	 *            Id do objeto a ser retornado.
 	 * @return Objeto vo preenchido com os dados do banco de dados, se
@@ -146,7 +147,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
 	/**
 	 * Retorna uma lista de objetos do banco de dados.
-	 * 
+	 *
 	 * @param filter
 	 *            Objeto que serve de base para filtros. Os valores que
 	 *            estiverem setados serao usados para filtrar.
@@ -180,7 +181,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
 	/**
 	 * Retorna uma lista de objetos do banco de dados.
-	 * 
+	 *
 	 * @param filter
 	 *            Objeto que serve de base para filtros. Os valores que
 	 *            estiverem setados serao usados para filtrar.
@@ -197,7 +198,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
 	/**
 	 * Retorna uma lista de objetos do banco de dados.
-	 * 
+	 *
 	 * @param filter
 	 *            Objeto que serve de base para filtros. Os valores que
 	 *            estiverem setados serao usados para filtrar.
@@ -248,7 +249,7 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	public void doBeforeDelete(E vo) throws BeException {
 	}
 
-	public void doAfterSave(E vo) throws SaveBeException {
+	public void doAfterSave(E vo) throws BeException {
 	}
 
 	public void doAfterUpdate(E vo) throws UpdateBeException {
@@ -289,5 +290,27 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 
 	public void setManager(DAOManager manager) {
 		this.manager = manager;
+	}
+
+	public List<JsonItemVo> toJsonVo(List<E> source, String idField, String labelField, String valueField) {
+
+		List<JsonItemVo> list = new ArrayList<JsonItemVo>(source.size());
+
+		for (E e : source) {
+			JsonItemVo i = new JsonItemVo();
+
+			Object idValue = DaoUtils.getValue(DaoUtils.getGetterMethod(getVOClass(), idField), e);
+			i.setId(idValue == null ? "" : idValue.toString());
+
+			Object labelValue = DaoUtils.getValue(DaoUtils.getGetterMethod(getVOClass(), labelField), e);
+			i.setLabel(labelValue == null ? "" : labelValue.toString());
+
+			Object valueValue = DaoUtils.getValue(DaoUtils.getGetterMethod(getVOClass(), valueField), e);
+			i.setValue(valueValue == null ? "" : valueValue.toString());
+
+			list.add(i);
+		}
+
+		return list;
 	}
 }

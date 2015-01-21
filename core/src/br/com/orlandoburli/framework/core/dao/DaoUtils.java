@@ -15,7 +15,7 @@ public class DaoUtils {
 
 	/**
 	 * Retorna uma nova instancia do objeto vo.
-	 * 
+	 *
 	 * @param classe
 	 *            Classe VO que sera criada
 	 * @return Objeto VO instanciado.
@@ -33,7 +33,7 @@ public class DaoUtils {
 
 	/**
 	 * Seta o valor do campo que for o ID.
-	 * 
+	 *
 	 * @param classe
 	 *            Classe VO que recebera o ID
 	 * @param vo
@@ -54,7 +54,7 @@ public class DaoUtils {
 
 	/**
 	 * Retorna uma nova instancia do objeto dao.
-	 * 
+	 *
 	 * @param classe
 	 *            Classe DAO que sera criada
 	 * @param manager
@@ -75,7 +75,7 @@ public class DaoUtils {
 
 	/**
 	 * Retorna uma nova instancia do objeto be.
-	 * 
+	 *
 	 * @param classe
 	 *            Classe Be que sera criada
 	 * @param manager
@@ -96,7 +96,7 @@ public class DaoUtils {
 
 	/**
 	 * Retorna o metodo getter de um atributo.
-	 * 
+	 *
 	 * @param classe
 	 *            Classe do objeto
 	 * @param f
@@ -116,9 +116,21 @@ public class DaoUtils {
 		return null;
 	}
 
+	public static Method getGetterMethod(Class<BaseVo> classe, String fieldName) {
+		String methodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+
+		try {
+			return classe.getMethod(methodName, new Class[] {});
+		} catch (NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
 	/**
 	 * Retorna o metodo setter de um atributo.
-	 * 
+	 *
 	 * @param classe
 	 *            Classe do objetio
 	 * @param f
@@ -140,7 +152,7 @@ public class DaoUtils {
 
 	/**
 	 * Retorna o valor de um metodo
-	 * 
+	 *
 	 * @param getter
 	 *            Metodo getter
 	 * @param vo
@@ -162,7 +174,7 @@ public class DaoUtils {
 
 	/**
 	 * Seta o valor de um atributo pelo setter
-	 * 
+	 *
 	 * @param setter
 	 *            Metodo setter
 	 * @param vo
@@ -182,4 +194,5 @@ public class DaoUtils {
 			Log.error(e);
 		}
 	}
+
 }

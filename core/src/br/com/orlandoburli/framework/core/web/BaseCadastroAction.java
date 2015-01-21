@@ -104,7 +104,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 			manager.begin();
 
 			@SuppressWarnings("unchecked")
-			E vo = (E) this.getRequest().getSession().getAttribute(this.getVoSessionId()); // getNewVo();
+			E vo = (E) getRequest().getSession().getAttribute(this.getVoSessionId()); // getNewVo();
 			G be = this.getNewBe(manager);
 
 			this.doBeforeAlterar(vo, manager);
@@ -167,25 +167,25 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 			this.injectVo(vo);
 
-			this.doBeforeVisualizar(this.getRequest(), this.getResponse(), vo, be, manager);
+			this.doBeforeVisualizar(getRequest(), getResponse(), vo, be, manager);
 
 			vo = be.get(vo);
 
 			this.doBeforeWriteVo(vo);
 
-			this.getRequest().setAttribute("vo", vo);
+			getRequest().setAttribute("vo", vo);
 
-			this.getRequest().getSession().setAttribute(this.getVoSessionId(), vo);
+			getRequest().getSession().setAttribute(this.getVoSessionId(), vo);
 
 			// Disabled especiais
 			if (this.operacao.equalsIgnoreCase("alterar")) {
-				this.getRequest().setAttribute("disabledAlterar", "disabled=\"disabled\"");
+				getRequest().setAttribute("disabledAlterar", "disabled=\"disabled\"");
 			}
 			if (this.operacao.equalsIgnoreCase("inserir")) {
-				this.getRequest().setAttribute("disabledInserir", "disabled=\"disabled\"");
+				getRequest().setAttribute("disabledInserir", "disabled=\"disabled\"");
 			}
 
-			this.forward(this.getJspCadastro());
+			forward(this.getJspCadastro());
 
 		} catch (ListException e) {
 			this.write(Utils.voToJson(new RetornoAction(false, e.getMessage(), e.getField())));
@@ -205,7 +205,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 			this.injectVo(vo);
 
-			this.doBeforeVisualizar(this.getRequest(), this.getResponse(), vo, be, manager);
+			this.doBeforeVisualizar(getRequest(), getResponse(), vo, be, manager);
 
 			vo = be.get(vo);
 
@@ -220,11 +220,20 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public E getVoSession() {
+		return (E) getRequest().getSession().getAttribute(getVoSessionId());
+	}
+
+	public void setVoSession(E vo) {
+		getRequest().getSession().setAttribute(getVoSessionId(), vo);
+	}
+
 	public void injectVo(E vo) {
 		InjectionFilter filter = new InjectionFilter();
-		filter.setContext(this.getContext());
-		filter.setRequest(this.getRequest());
-		filter.setResponse(this.getResponse());
+		filter.setContext(getContext());
+		filter.setRequest(getRequest());
+		filter.setResponse(getResponse());
 
 		try {
 			filter.doFilter(vo);

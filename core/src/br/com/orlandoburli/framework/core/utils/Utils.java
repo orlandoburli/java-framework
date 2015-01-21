@@ -80,6 +80,26 @@ public final class Utils {
 		return str;
 	}
 
+	public static String voToJson(List<?> list) {
+		if (list == null || list.size() <= 0) {
+			return "[]";
+		}
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("[");
+
+		for (Object object : list) {
+			sb.append(voToJson(object) + ",");
+		}
+
+		sb.delete(sb.length() - 1, sb.length());
+
+		sb.append("]");
+
+		return sb.toString();
+	}
+
 	public static String voToJson(Object obj) {
 
 		if (obj == null) {

@@ -12,7 +12,7 @@ import org.apache.velocity.context.Context;
 
 import br.com.orlandoburli.framework.core.be.validation.ValidatorUtils;
 import br.com.orlandoburli.framework.core.utils.Utils;
-import br.com.orlandoburli.minhasvendas.model.vo.estoque.ProdutoVo;
+import br.com.orlandoburli.minhasvendas.model.vo.estoque.ItemEntradaVo;
 
 public class GeradorCodigo {
 
@@ -36,7 +36,7 @@ public class GeradorCodigo {
 		// String packageWeb = "br.com.orlandoburli.pmo.web.actions";
 		String packageWeb = "br.com.orlandoburli.minhasvendas.web.actions";
 		// Classe Vo de base
-		Class<?> voClass = ProdutoVo.class;
+		Class<?> voClass = ItemEntradaVo.class;
 
 		for (int i = 0; i < 200; i++) {
 			System.out.print("-");
