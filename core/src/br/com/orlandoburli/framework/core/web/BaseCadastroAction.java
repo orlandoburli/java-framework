@@ -70,7 +70,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	}
 
 	public void inserir() {
-		E vo = this.getNewVo();
+		E vo = getVoSession() == null ? this.getNewVo() : getVoSession();
 		G be = this.getNewBe(this.getManager());
 
 		try {
@@ -300,8 +300,10 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 	/**
 	 * Sobrescrever o metodo para operacoes realizadas antes de alterar um
 	 * registro
+	 *
+	 * @throws BeException
 	 */
-	public void doBeforeAlterar(E vo, DAOManager manager) throws UpdateBeException {
+	public void doBeforeAlterar(E vo, DAOManager manager) throws UpdateBeException, BeException {
 
 	}
 

@@ -116,7 +116,7 @@ public class DaoUtils {
 		return null;
 	}
 
-	public static Method getGetterMethod(Class<BaseVo> classe, String fieldName) {
+	public static Method getGetterMethod(Class<?> classe, String fieldName) {
 		String methodName = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 
 		try {
@@ -144,6 +144,19 @@ public class DaoUtils {
 		try {
 			return classe.getMethod(methodName, new Class[] { f.getType() });
 		} catch (NoSuchMethodException | SecurityException e) {
+			Log.error(e);
+		}
+
+		return null;
+	}
+
+	public static Method getSetterMethod(Class<?> classe, String fieldName) {
+		String methodName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+
+		try {
+			Field f = classe.getField(fieldName);
+			return classe.getMethod(methodName, new Class[] { f.getType() });
+		} catch (NoSuchMethodException | SecurityException | NoSuchFieldException e) {
 			Log.error(e);
 		}
 
