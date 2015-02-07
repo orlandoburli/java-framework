@@ -18,6 +18,7 @@ import br.com.orlandoburli.framework.core.be.validation.annotations.transformati
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.ZeroIfNull;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.Cnpj;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.Cpf;
+import br.com.orlandoburli.framework.core.be.validation.annotations.validators.CpfCnpj;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.Domain;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.Email;
 import br.com.orlandoburli.framework.core.be.validation.annotations.validators.MaxSize;
@@ -37,6 +38,7 @@ import br.com.orlandoburli.framework.core.be.validation.implementation.transform
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.UpperTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.ZeroIfNullTransformation;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.CnpjValidator;
+import br.com.orlandoburli.framework.core.be.validation.implementation.validators.CpfCnpjValidator;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.CpfValidator;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.DomainValidator;
 import br.com.orlandoburli.framework.core.be.validation.implementation.validators.EmailValidator;
@@ -106,6 +108,8 @@ public final class ValidatorUtils {
 					new CpfValidator().validate(vo, f, classe);
 				} else if (a instanceof Cnpj) {
 					new CnpjValidator().validate(vo, f, classe);
+				} else if (a instanceof CpfCnpj) {
+					new CpfCnpjValidator().validate(vo, f, classe);
 				}
 			}
 		}
@@ -296,20 +300,11 @@ public final class ValidatorUtils {
 	/*
 	 * public static boolean isJoin(Class<?> clazz, Field f) { if (!isField(f))
 	 * { return false; } Column c = f.getAnnotation(Column.class); String
-	 * columnName = c.name();
-	 * 
-	 * Join j = null; Field fJoin = null;
-	 * 
-	 * Field[] fields = clazz.getDeclaredFields();
-	 * 
-	 * for (Field field : fields) { Join join = field.getAnnotation(Join.class);
-	 * 
-	 * if (join != null) { if (join.columnsLocal()[0].equals(columnName)) { j =
-	 * join; fJoin = field; break; } } }
-	 * 
-	 * if (j != null) { return true; }
-	 * 
-	 * return false; }
+	 * columnName = c.name(); Join j = null; Field fJoin = null; Field[] fields
+	 * = clazz.getDeclaredFields(); for (Field field : fields) { Join join =
+	 * field.getAnnotation(Join.class); if (join != null) { if
+	 * (join.columnsLocal()[0].equals(columnName)) { j = join; fJoin = field;
+	 * break; } } } if (j != null) { return true; } return false; }
 	 */
 
 	public static String getFieldDescription(Field f) {

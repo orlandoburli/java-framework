@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import br.com.orlandoburli.framework.core.be.BaseBe;
 import br.com.orlandoburli.framework.core.be.exceptions.BeException;
+import br.com.orlandoburli.framework.core.be.exceptions.RotinaNaoImplementadaException;
 import br.com.orlandoburli.framework.core.be.exceptions.persistence.DeleteBeException;
 import br.com.orlandoburli.framework.core.be.exceptions.persistence.InsertBeException;
 import br.com.orlandoburli.framework.core.be.exceptions.persistence.ListException;
@@ -229,7 +230,7 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 		getRequest().getSession().setAttribute(getVoSessionId(), vo);
 	}
 
-	public void injectVo(E vo) {
+	public void injectVo(BaseVo vo) {
 		InjectionFilter filter = new InjectionFilter();
 		filter.setContext(getContext());
 		filter.setRequest(getRequest());
@@ -399,5 +400,9 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 	public void setManager(DAOManager manager) {
 		this.manager = manager;
+	}
+
+	public void rapido() {
+		throw new RotinaNaoImplementadaException("Rotina de cadastro rápido não implementada nesta classe!");
 	}
 }

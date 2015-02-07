@@ -12,7 +12,7 @@ import org.apache.velocity.context.Context;
 
 import br.com.orlandoburli.framework.core.be.validation.ValidatorUtils;
 import br.com.orlandoburli.framework.core.utils.Utils;
-import br.com.orlandoburli.minhasvendas.model.vo.estoque.EstoqueFisicoVo;
+import br.com.orlandoburli.minhasvendas.model.vo.estoque.FornecedorVo;
 
 public class GeradorCodigo2 {
 
@@ -36,7 +36,7 @@ public class GeradorCodigo2 {
 		// String packageWeb = "br.com.orlandoburli.pmo.web.actions";
 		String packageWeb = "br.com.orlandoburli.minhasvendas.web.actions";
 		// Classe Vo de base
-		Class<?> voClass = EstoqueFisicoVo.class;
+		Class<?> voClass = FornecedorVo.class;
 
 		for (int i = 0; i < 200; i++) {
 			System.out.print("-");
@@ -69,10 +69,10 @@ public class GeradorCodigo2 {
 		boolean overWrite = false;
 
 		// Dao
-		executeTemplate(ve, context, "templates/generate-dao.vm", fileDao, overWrite);
+		executeTemplate(ve, context, "templates2/generate-dao.vm", fileDao, overWrite);
 
 		// Be
-		executeTemplate(ve, context, "templates/generate-be.vm", fileBe, overWrite);
+		executeTemplate(ve, context, "templates2/generate-be.vm", fileBe, overWrite);
 
 		String grupo = voClass.getPackage().getName().substring(voClass.getPackage().getName().indexOf(".vo.")).replace(".vo.", "");
 
@@ -85,23 +85,23 @@ public class GeradorCodigo2 {
 
 		// Cadastro Action
 
-		executeTemplate(ve, context, "templates/generate-cadastro-action.vm", fileCadastroAction, overWrite);
+		executeTemplate(ve, context, "templates2/generate-cadastro-action.vm", fileCadastroAction, overWrite);
 
 		// Consulta Action
 
-		executeTemplate(ve, context, "templates/generate-consulta-action.vm", fileConsultaAction, overWrite);
+		executeTemplate(ve, context, "templates2/generate-consulta-action.vm", fileConsultaAction, overWrite);
 
 		String fileCadastroJsp = webFolder + grupo + "/" + voClass.getSimpleName().replace("Vo", "").toLowerCase() + "/" + voClass.getSimpleName().replace("Vo", "cadastro.jsp").toLowerCase();
 		String fileConsultaJsp = webFolder + grupo + "/" + voClass.getSimpleName().replace("Vo", "").toLowerCase() + "/" + voClass.getSimpleName().replace("Vo", "consulta.jsp").toLowerCase();
 		String fileConsultaJspGrid = webFolder + grupo + "/" + voClass.getSimpleName().replace("Vo", "").toLowerCase() + "/" + voClass.getSimpleName().replace("Vo", "consulta_grid.jsp").toLowerCase();
 
 		// Cadastro Jsp
-		executeTemplate(ve, context, "templates/generate-cadastro-jsp.vm", fileCadastroJsp, overWrite);
+		executeTemplate(ve, context, "templates2/generate-cadastro-jsp.vm", fileCadastroJsp, overWrite);
 
 		// Consulta Jsp
 
-		executeTemplate(ve, context, "templates/generate-consulta-jsp.vm", fileConsultaJsp, overWrite);
-		executeTemplate(ve, context, "templates/generate-consulta-grid-jsp.vm", fileConsultaJspGrid, overWrite);
+		executeTemplate(ve, context, "templates2/generate-consulta-jsp.vm", fileConsultaJsp, overWrite);
+		executeTemplate(ve, context, "templates2/generate-consulta-grid-jsp.vm", fileConsultaJspGrid, overWrite);
 
 		for (int i = 0; i < 200; i++) {
 			System.out.print("-");

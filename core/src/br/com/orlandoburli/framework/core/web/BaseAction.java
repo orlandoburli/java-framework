@@ -131,7 +131,11 @@ public class BaseAction implements Serializable {
 	}
 
 	public void writeSucesso(String mensagem) {
-		RetornoAction retorno = new RetornoAction(true, mensagem);
+		writeSucesso(mensagem, null);
+	}
+
+	public void writeSucesso(String mensagem, Object objeto) {
+		RetornoAction retorno = new RetornoAction(true, mensagem, objeto);
 		this.write(Utils.voToJson(retorno));
 	}
 

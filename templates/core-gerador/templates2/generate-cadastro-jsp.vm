@@ -20,29 +20,28 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
 <%@include file="../../header-title.jsp"%>
-
-<div class="row">
-	<div class="col-md-12">
-		<div class="portlet box blue-hoki">
-		
-			<div class="portlet-title">
-				<div class="caption">
-					<i class="fa "></i>${subtitulo}
-				</div>
-			</div>
+<section class="content">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="portlet box box-solid box-primary">
 			
-			<div class="portlet-body form FormularioCadastro FormularioGeral" data-page-consulta="${simpleVo}consulta.action" data-page-operacao="${operacao}" data-page-cadastro="${simpleVo}cadastro.action">
-				<form class="form-horizontal" action="#" role="form">
-					<div class="form-body">
+				<div class="box-header">
+					<h3 class="box-title">${subtitulo}</h3>
+				</div>
+				
+				<div class="box-body">
+					<div class="portlet-body form FormularioCadastro FormularioGeral" data-page-consulta="${simpleVo}consulta.action" data-page-operacao="${operacao}" data-page-cadastro="${simpleVo}cadastro.action">
+						<form class="form-horizontal" action="#" role="form">
+							<div class="form-body">
 #set ($autofocus = 'autofocus="autofocus"')
 #set ($first = true)
 ##
 ##
 #foreach($field in $fields)
 #if ( $ValidatorUtils.isField($field) )
-						<div class="form-group">
-							<label class="col-sm-2 control-label text-right">$ValidatorUtils.getFieldDescription($field)</label>
-							<div class="col-sm-7">
+								<div class="form-group">
+									<label class="col-sm-2 control-label text-right">$ValidatorUtils.getFieldDescription($field)</label>
+									<div class="col-sm-7">
 #set ($disabled = "")
 #if ( $ValidatorUtils.isKey( $field ))
 #set ($disabled = 'disabled="disabled"')
@@ -61,29 +60,31 @@
 ## 
 ## ------- Tipo Domain -------
 #if ($ValidatorUtils.isDomain( $field ) )
-								<select id="$field.getName()" class="form-control input-circle">
+										<select id="$field.getName()" class="form-control input-circle">
 #foreach( $d in $ValidatorUtils.getDomains( $field ) )
-									<option <c:if test="${ vo.$field.getName() == '$d.getValor()'}">selected="selected"</c:if> value="$d.getValor()">$d.getDescricao()</option>
+											<option <c:if test="${ vo.$field.getName() == '$d.getValor()'}">selected="selected"</c:if> value="$d.getValor()">$d.getDescricao()</option>
 #end
-								</select>
+										</select>
 #else
-								<input id="$field.getName()" type="text" $disabled $autofocus class="form-control input-circle" value="${ vo.$field.getName() }" />
+										<input id="$field.getName()" type="text" $disabled $autofocus class="form-control input-circle" value="${ vo.$field.getName() }" />
 #end
 ##
 ## **********************************************************************************
 ##
 ##
+									</div>
+								</div>
+								
+#end
+#end
+##
+##
+								<%@include file="../../botoes-cadastro.jsp"%>
 							</div>
-						</div>
-						
-#end
-#end
-##
-##
-						<%@include file="../../botoes-cadastro.jsp"%>
+						</form>
 					</div>
-				</form>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
+</section>

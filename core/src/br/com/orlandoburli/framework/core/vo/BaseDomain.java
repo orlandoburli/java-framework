@@ -32,6 +32,9 @@ public abstract class BaseDomain {
 	}
 
 	public String getDescription(Object value) {
+		if (value == null) {
+			return null;
+		}
 		String[] values = getValues();
 
 		for (int i = 0; i < values.length; i++) {

@@ -106,6 +106,38 @@ public abstract class BaseBe<E extends BaseVo, F extends BaseCadastroDao<E>> {
 	}
 
 	/**
+	 * Executa as rotinas de validacao sem salvar
+	 *
+	 * @param vo
+	 *            Objeto a ser validado
+	 * @throws BeException
+	 */
+	public void validate(E vo) throws BeException {
+		validate(vo, false, false);
+	}
+
+	/**
+	 * Executa as rotinas de validacao sem salvar
+	 *
+	 * @param vo
+	 *            Objeto a ser validado
+	 * @param insert
+	 *            Opcao de validacoes exclusivas de insert
+	 * @param update
+	 *            Opcao de validacoes exclusivas de update
+	 * @throws BeException
+	 */
+	public void validate(E vo, boolean insert, boolean update) throws BeException {
+		doBeforeSave(vo);
+		if (insert) {
+			doBeforeInsert(vo);
+		}
+		if (update) {
+			doBeforeUpdate(vo);
+		}
+	}
+
+	/**
 	 * Retorna um objeto do banco de dados.
 	 *
 	 * @param vo

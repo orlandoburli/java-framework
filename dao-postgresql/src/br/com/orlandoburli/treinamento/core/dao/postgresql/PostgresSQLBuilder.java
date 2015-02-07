@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.Precision;
 import br.com.orlandoburli.framework.core.dao.DAOManager;
 import br.com.orlandoburli.framework.core.dao.DaoControle;
 import br.com.orlandoburli.framework.core.dao.DaoUtils;
@@ -51,7 +52,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 		for (Field f : fields) {
 			if (getColumn(f) != null) {
-				sql.append(this.getColumnName(f) + ", ");
+				sql.append(getColumnName(f) + ", ");
 			}
 		}
 
@@ -93,7 +94,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		for (Field f : fields) {
 			Column column = getColumn(f);
 			if (column != null && !column.isKey()) {
-				sql.append("\n        " + this.getColumnName(f) + " = ?, ");
+				sql.append("\n        " + getColumnName(f) + " = ?, ");
 			}
 		}
 
@@ -170,7 +171,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			if (column != null) {
 				String prefixColumn = prefix + "_";
 
-				sql.append("\n        " + prefix + "." + this.getColumnName(f) + " AS " + prefixColumn + this.getColumnName(f) + ", ");
+				sql.append("\n        " + prefix + "." + getColumnName(f) + " AS " + prefixColumn + getColumnName(f) + ", ");
 			} else if (join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
@@ -299,9 +300,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 						if (f.getType().equals(String.class)) {
 							// Apenas o tipo STRING muda o filtro para LIKE
-							sqlWhere.append("\n    AND " + prefix + "." + this.getColumnName(f) + " ILIKE ? ");
+							sqlWhere.append("\n    AND " + prefix + "." + getColumnName(f) + " ILIKE ? ");
 						} else {
-							sqlWhere.append("\n    AND " + prefix + "." + this.getColumnName(f) + " = ? ");
+							sqlWhere.append("\n    AND " + prefix + "." + getColumnName(f) + " = ? ");
 						}
 					}
 				}
@@ -983,7 +984,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Seta os parametros para o insert.
-	 * 
+	 *
 	 * @param prepared
 	 *            PreparedStatement que tem o comando de insert
 	 * @param vo
@@ -992,6 +993,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	 * @throws SQLException
 	 * @throws SQLDaoException
 	 */
+	@Override
 	public void setInsertParameters(PreparedStatement prepared, BaseVo vo, Class<BaseVo> classe, Integer auto) throws SQLException, SQLDaoException {
 
 		int posicao = 0;
@@ -1055,7 +1057,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Seta os parametros de uma clausula WHERE, usado para SELECT.
-	 * 
+	 *
 	 * @param prepared
 	 *            java.sql.PreparedStatement com o comando a ser executado
 	 * @param vo
@@ -1077,6 +1079,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	 * @throws SQLException
 	 * @throws DAOException
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public void setSelectWhereParameters(PreparedStatement prepared, BaseVo vo, Class<BaseVo> classe, boolean keysOnly, String prefix, DaoControle controle, DaoControle posicao) throws SQLException, DAOException {
 		// int posicao = 0;
@@ -1145,7 +1148,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 						String prefix2 = join.tableAlias().equals("") ? getTablename(f.getType()) : join.tableAlias();
 
-						setSelectWhereParameters(prepared, (BaseVo) vo2, (Class<BaseVo>) vo2.getClass(), false, prefix2, controle, posicao);
+						setSelectWhereParameters(prepared, vo2, (Class<BaseVo>) vo2.getClass(), false, prefix2, controle, posicao);
 					}
 				}
 			}
@@ -1154,13 +1157,14 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Seta os parametros de uma clausula WHERE, usado para UPDATE.
-	 * 
+	 *
 	 * @param prepared
 	 *            java.sql.PreparedStatement com o comando a ser executado
 	 * @param vo
 	 *            Objeto com os valores a serem setados
 	 * @throws SQLException
 	 */
+	@Override
 	public void setUpdateParameters(PreparedStatement prepared, BaseVo vo, Class<BaseVo> classe) throws SQLException {
 		int posicao = 0;
 
@@ -1257,7 +1261,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Seta os parametros de uma clausula WHERE, usado para DELETE.
-	 * 
+	 *
 	 * @param prepared
 	 *            java.sql.PreparedStatement com o comando a ser executado
 	 * @param vo
@@ -1265,6 +1269,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	 * @param classe
 	 * @throws SQLException
 	 */
+	@Override
 	public void setDeleteParameters(PreparedStatement prepared, BaseVo vo, Class<BaseVo> classe) throws SQLException {
 		int posicao = 0;
 
@@ -1317,7 +1322,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Converte um java.sql.ResultSet em um VO.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto que ira receber os dados.
 	 * @param result
@@ -1325,6 +1330,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	 * @throws DAOException
 	 * @throws SQLException
 	 */
+	@Override
 	public void resultToVo(BaseVo vo, ResultSet result, String prefix, DaoControle controle) throws DAOException {
 
 		Log.info("ResultToVo - " + vo.getClass());
@@ -1375,6 +1381,21 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 								DaoUtils.setValue(setter, vo, cal);
 							}
+						}
+					} else if (f.getType().equals(BigDecimal.class)) {
+						try {
+							BigDecimal bigDecimal = result.getBigDecimal(columnName);
+
+							Precision p = f.getAnnotation(Precision.class);
+
+							if (p != null) {
+								bigDecimal = bigDecimal.setScale(p.value(), BigDecimal.ROUND_CEILING);
+							}
+
+							DaoUtils.setValue(setter, vo, bigDecimal);
+
+						} catch (SQLException e) {
+							Log.warning(e.getMessage());
 						}
 					} else {
 						try {

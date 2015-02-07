@@ -100,6 +100,23 @@ public final class Utils {
 		return sb.toString();
 	}
 
+	public static String listToJson(List<?> list) {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("{");
+		// sb.append("\"total_count\": " + list.size() + ", ");
+		// sb.append("\"incomplete_results\": false,");
+		// sb.append("\"items\": ");
+
+		sb.append("\"results\":");
+
+		sb.append(voToJson(list));
+		sb.append(",\"more\": false");
+		sb.append("}");
+
+		return sb.toString();
+	}
+
 	public static String voToJson(Object obj) {
 
 		if (obj == null) {
