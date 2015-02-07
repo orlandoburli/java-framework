@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 import br.com.orlandoburli.framework.core.be.exceptions.BeException;
 import br.com.orlandoburli.framework.core.be.exceptions.validation.ValidationBeException;
+import br.com.orlandoburli.framework.core.be.validation.implementation.transformation.FilterOnlyTransformation;
 import br.com.orlandoburli.framework.core.be.validation.utils.CNPJUtils;
 import br.com.orlandoburli.framework.core.be.validation.utils.CPFUtils;
 import br.com.orlandoburli.framework.core.dao.DaoUtils;
@@ -24,6 +25,8 @@ public class CpfCnpjValidator extends BaseValidator {
 
 			// So valida se a string nao for nula e nem vazia
 			if (string != null && !string.trim().equals("")) {
+				// Filtra so os numeros, remove a mascara
+				string = FilterOnlyTransformation.filtrarString(string, "1234567890");
 
 				if (string.length() == 11) {
 					if (!CPFUtils.isCPF(string)) {
