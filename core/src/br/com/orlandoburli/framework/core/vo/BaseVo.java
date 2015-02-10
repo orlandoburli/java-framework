@@ -9,11 +9,11 @@ public abstract class BaseVo implements Serializable {
 	private boolean isNew;
 
 	public BaseVo() {
-		this.setNew(true);
+		setNew(true);
 	}
 
 	public boolean isNew() {
-		return this.isNew;
+		return isNew;
 	}
 
 	public void setNew(boolean isNew) {

@@ -168,9 +168,13 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 			this.injectVo(vo);
 
-			this.doBeforeVisualizar(getRequest(), getResponse(), vo, be, manager);
-
 			vo = be.get(vo);
+
+			if (vo == null) {
+				vo = this.getNewVo();
+			}
+
+			this.doBeforeVisualizar(getRequest(), getResponse(), vo, be, manager);
 
 			this.doBeforeWriteVo(vo);
 
