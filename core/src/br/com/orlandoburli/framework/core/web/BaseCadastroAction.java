@@ -166,6 +166,8 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 
 			E vo = this.getNewVo();
 
+			this.doBeforeGetOnVisualizar(getRequest(), getResponse(), vo, be, manager);
+
 			this.injectVo(vo);
 
 			vo = be.get(vo);
@@ -247,6 +249,10 @@ public abstract class BaseCadastroAction<E extends BaseVo, F extends BaseCadastr
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void doBeforeGetOnVisualizar(HttpServletRequest request, HttpServletResponse response, E vo, G be, DAOManager manager) {
+
 	}
 
 	public void doBeforeVisualizar(HttpServletRequest request, HttpServletResponse response, E vo, G be, DAOManager manager) throws ListException {

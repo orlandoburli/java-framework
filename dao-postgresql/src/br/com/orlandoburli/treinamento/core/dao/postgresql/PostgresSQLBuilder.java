@@ -46,13 +46,13 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	public String buildSqlInsertStatement(Class<BaseVo> classe) throws DAOException {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append("INSERT INTO " + getTablename(classe) + " (");
+		sql.append("INSERT INTO " + this.getTablename(classe) + " (");
 
 		Field[] fields = classe.getDeclaredFields();
 
 		for (Field f : fields) {
-			if (getColumn(f) != null) {
-				sql.append(getColumnName(f) + ", ");
+			if (this.getColumn(f) != null) {
+				sql.append(this.getColumnName(f) + ", ");
 			}
 		}
 
@@ -61,7 +61,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		sql.append(") VALUES (");
 
 		for (Field f : fields) {
-			if (getColumn(f) != null) {
+			if (this.getColumn(f) != null) {
 				sql.append("?, ");
 			}
 		}
@@ -75,7 +75,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public String buildSqlNextSequence(Class<BaseVo> classe) {
-		String sequenceName = getSequenceName(classe);
+		String sequenceName = this.getSequenceName(classe);
 		if (sequenceName != null) {
 			StringBuilder sb = new StringBuilder("SELECT nextval('" + sequenceName + "')");
 			return sb.toString();
@@ -87,20 +87,20 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	public String buildSqlUpdateStatement(Class<BaseVo> classe) throws DAOException {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append("\n UPDATE " + getTablename(classe) + " SET ");
+		sql.append("\n UPDATE " + this.getTablename(classe) + " SET ");
 
 		Field[] fields = classe.getDeclaredFields();
 
 		for (Field f : fields) {
-			Column column = getColumn(f);
+			Column column = this.getColumn(f);
 			if (column != null && !column.isKey()) {
-				sql.append("\n        " + getColumnName(f) + " = ?, ");
+				sql.append("\n        " + this.getColumnName(f) + " = ?, ");
 			}
 		}
 
 		sql.delete(sql.length() - 2, sql.length());
 
-		buildSqlWhereStatement(sql, classe, null, true, getTablename(classe), new DaoControle(0));
+		this.buildSqlWhereStatement(sql, classe, null, true, this.getTablename(classe), new DaoControle(0));
 
 		return sql.toString();
 	}
@@ -109,9 +109,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	public String buildSqlDeleteStatement(Class<BaseVo> classe) throws DAOException {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append("\nDELETE FROM " + getTablename(classe) + " ");
+		sql.append("\nDELETE FROM " + this.getTablename(classe) + " ");
 
-		buildSqlWhereStatement(sql, classe, null, true, getTablename(classe), new DaoControle(0));
+		this.buildSqlWhereStatement(sql, classe, null, true, this.getTablename(classe), new DaoControle(0));
 
 		return sql.toString();
 	}
@@ -122,11 +122,11 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		StringBuilder sql = new StringBuilder();
 		sql.append("\n SELECT");
 
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 
 		Field[] fields = classe.getDeclaredFields();
 
-		buildSelectFields(classe, sql, fields, tablename, new DaoControle(maxSubJoins));
+		this.buildSelectFields(classe, sql, fields, tablename, new DaoControle(maxSubJoins));
 
 		// Remove a virgula e o espaco do final
 		sql.delete(sql.length() - 2, sql.length());
@@ -136,7 +136,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		// Loop dos Joins Encontrados
 		List<String> buff = new ArrayList<String>();
 
-		buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
+		this.buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
 
 		return sql.toString();
 	}
@@ -146,7 +146,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		StringBuilder sql = new StringBuilder();
 		sql.append("\n SELECT");
 
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 
 		sql.append("\n     COUNT(1)");
 
@@ -157,7 +157,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 		Field[] fields = classe.getDeclaredFields();
 
-		buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
+		this.buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
 
 		return sql.toString();
 	}
@@ -165,13 +165,13 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	@SuppressWarnings("unchecked")
 	public void buildSelectFields(Class<BaseVo> classe, StringBuilder sql, Field[] fields, String prefix, DaoControle controle) throws DAOException {
 		for (Field f : fields) {
-			Join join = getJoin(f);
-			Column column = getColumn(f);
+			Join join = this.getJoin(f);
+			Column column = this.getColumn(f);
 
 			if (column != null) {
 				String prefixColumn = prefix + "_";
 
-				sql.append("\n        " + prefix + "." + getColumnName(f) + " AS " + prefixColumn + getColumnName(f) + ", ");
+				sql.append("\n        " + prefix + "." + this.getColumnName(f) + " AS " + prefixColumn + this.getColumnName(f) + ", ");
 			} else if (join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
@@ -181,12 +181,12 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 					// sql.append("\n");
 
-					String prefix2 = join.tableAlias().equals("") ? getTablename(f.getType()) : join.tableAlias();
+					String prefix2 = join.tableAlias().equals("") ? this.getTablename(f.getType()) : join.tableAlias();
 					prefix2 += "";
 
 					if (!controle.isMaximo()) {
 						controle.incrementaInteracoes();
-						buildSelectFields((Class<BaseVo>) f.getType(), sql, fieldsJoin, prefix + "_" + prefix2, controle);
+						this.buildSelectFields((Class<BaseVo>) f.getType(), sql, fieldsJoin, prefix + "_" + prefix2, controle);
 					}
 				} else {
 					// Join de uma coluna so
@@ -206,13 +206,13 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	public void buidlSelectJoins(StringBuilder sql, Field[] fields, String tablename, List<String> buff, String prefix, String tableOrigin, DaoControle controle) throws SecurityException, DAOException {
 		for (Field f : fields) {
-			Join join = getJoin(f);
+			Join join = this.getJoin(f);
 
 			if (join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 				String tableJoin = null;
 
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
-					tableJoin = getTablename(f.getType());
+					tableJoin = this.getTablename(f.getType());
 				} else {
 					tableJoin = join.tableRemote();
 				}
@@ -237,7 +237,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 					buff.add(prefix + tableAlias);
 
-					sql.append("\n  " + getJoinType(join) + " " + tableJoin + " " + prefix + tableAlias);
+					sql.append("\n  " + this.getJoinType(join) + " " + tableJoin + " " + prefix + tableAlias);
 					boolean first = true;
 
 					for (int i = 0; i < join.columnsLocal().length; i++) {
@@ -248,7 +248,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
 					if (!controle.isMaximo()) {
 						controle.incrementaInteracoes();
-						buidlSelectJoins(sql, f.getType().getDeclaredFields(), tableJoin, buff, prefix + tableAlias + "_", prefix + tableAlias, controle);
+						this.buidlSelectJoins(sql, f.getType().getDeclaredFields(), tableJoin, buff, prefix + tableAlias + "_", prefix + tableAlias, controle);
 					}
 				}
 			}
@@ -284,7 +284,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			Field[] fields = classe.getDeclaredFields();
 
 			for (Field f : fields) {
-				Column column = getColumn(f);
+				Column column = this.getColumn(f);
 
 				if ((column != null && !keysOnly) || (keysOnly && column != null && column.isKey())) {
 
@@ -300,9 +300,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 						if (f.getType().equals(String.class)) {
 							// Apenas o tipo STRING muda o filtro para LIKE
-							sqlWhere.append("\n    AND " + prefix + "." + getColumnName(f) + " ILIKE ? ");
+							sqlWhere.append("\n    AND " + prefix + "." + this.getColumnName(f) + " ILIKE ? ");
 						} else {
-							sqlWhere.append("\n    AND " + prefix + "." + getColumnName(f) + " = ? ");
+							sqlWhere.append("\n    AND " + prefix + "." + this.getColumnName(f) + " = ? ");
 						}
 					}
 				}
@@ -320,9 +320,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 					if (value != null && !controle.isMaximo()) {
 						controle.incrementaInteracoes();
 
-						String prefix2 = join.tableAlias().equals("") ? getTablename(f.getType()) : join.tableAlias();
+						String prefix2 = join.tableAlias().equals("") ? this.getTablename(f.getType()) : join.tableAlias();
 
-						buildSqlWhereStatement(sqlWhere, (Class<BaseVo>) f.getType(), (BaseVo) value, false, prefix + "_" + prefix2, controle);
+						this.buildSqlWhereStatement(sqlWhere, (Class<BaseVo>) f.getType(), (BaseVo) value, false, prefix + "_" + prefix2, controle);
 					}
 				}
 			}
@@ -331,7 +331,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void tableExists(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 
 		Log.debug("Checando se a tabela " + tablename + " existe");
 
@@ -351,7 +351,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	public void sequenceExists(Class<BaseVo> classe, DAOManager manager) throws DAOException {
 		try {
 
-			String sequenceName = getSequenceName(classe);
+			String sequenceName = this.getSequenceName(classe);
 			if (sequenceName == null) {
 				return;
 			}
@@ -368,7 +368,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void tableCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 
 		Log.debug("Checando os campos da tabela " + tablename);
 
@@ -377,9 +377,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			for (Field f : classe.getDeclaredFields()) {
 
 				// Busca a coluna na classe
-				Column column = getColumn(f);
+				Column column = this.getColumn(f);
 
-				String columnName = getColumnName(f);
+				String columnName = this.getColumnName(f);
 
 				if (column != null) {
 
@@ -540,7 +540,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void createTable(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String tableName = getTablename(classe);
+		String tableName = this.getTablename(classe);
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("CREATE TABLE " + tableName + " (");
@@ -551,14 +551,14 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 		for (Field f : fields) {
 
-			String columnName = getColumnName(f);
-			Column column = getColumn(f);
+			String columnName = this.getColumnName(f);
+			Column column = this.getColumn(f);
 
 			String columnType = "";
 
 			if (column != null) {
 
-				columnType = getColumnDeclaration(column);
+				columnType = this.getColumnDeclaration(column);
 
 				if (column.isKey()) {
 					sqlPk += columnName + ", ";
@@ -586,7 +586,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 			try {
 				// Confirma se a tabela foi gerada corretamente.
-				tableCheck(classe, manager);
+				this.tableCheck(classe, manager);
 			} catch (TableNotExistsException e) {
 				throw new StatementNotExecutedException("Tabela [" + tableName + "] nao criada!");
 			}
@@ -614,17 +614,19 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			columnType = "NUMERIC";
 		} else if (column.dataType() == DataType.TEXT) {
 			columnType = "TEXT";
+		} else if (column.dataType() == DataType.BYTE) {
+			columnType = "BYTEA";
 		}
 
 		if (column.maxSize() > 0) {
 			columnSize = column.maxSize();
 		} else {
 			if (column.dataType() == DataType.VARCHAR) {
-				columnSize = VARCHAR_SIZE_DEFAULT;
+				columnSize = SQLBuilder.VARCHAR_SIZE_DEFAULT;
 			} else if (column.dataType() == DataType.CHAR || column.dataType() == DataType.DOMAIN_STRING) {
-				columnSize = CHAR_SIZE_DEFAULT;
+				columnSize = SQLBuilder.CHAR_SIZE_DEFAULT;
 			} else if (column.dataType() == DataType.NUMERIC) {
-				columnSize = NUMERIC_DEFAULT_SIZE;
+				columnSize = SQLBuilder.NUMERIC_DEFAULT_SIZE;
 			}
 		}
 
@@ -643,7 +645,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void createSequence(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String sequenceName = getSequenceName(classe);
+		String sequenceName = this.getSequenceName(classe);
 
 		try {
 			if (sequenceName == null) {
@@ -663,13 +665,13 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void alterTable(Class<BaseVo> classe, DAOManager manager, DAOException e) throws DAOException {
-		String tableName = getTablename(classe);
+		String tableName = this.getTablename(classe);
 
 		if (e instanceof WrongColumnException) {
 			WrongColumnException e1 = (WrongColumnException) e;
 
-			String columnName = getColumnName(e1.getField());
-			String columnDeclaration = getColumnDeclaration(e1.getColumn());
+			String columnName = this.getColumnName(e1.getField());
+			String columnDeclaration = this.getColumnDeclaration(e1.getColumn());
 
 			StringBuilder sql = new StringBuilder("ALTER TABLE " + tableName + " ");
 			sql.append(" ALTER " + columnName + " TYPE " + columnDeclaration);
@@ -689,8 +691,8 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		} else if (e instanceof WrongNotNullException) {
 			WrongNotNullException e1 = (WrongNotNullException) e;
 
-			String columnName = getColumnName(e1.getField());
-			String columnDeclaration = getColumnDeclaration(e1.getColumn());
+			String columnName = this.getColumnName(e1.getField());
+			String columnDeclaration = this.getColumnDeclaration(e1.getColumn());
 
 			StringBuilder sql = new StringBuilder("ALTER TABLE " + tableName + " ");
 			sql.append(" ALTER " + columnName + (e1.getColumn().isNotNull() || e1.getColumn().isKey() ? " SET NOT NULL" : " DROP NOT NULL"));
@@ -709,8 +711,8 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		} else if (e instanceof ColumnNotFoundException) {
 			ColumnNotFoundException e1 = (ColumnNotFoundException) e;
 
-			String columnName = getColumnName(e1.getField());
-			String columnDeclaration = getColumnDeclaration(e1.getColumn());
+			String columnName = this.getColumnName(e1.getField());
+			String columnDeclaration = this.getColumnDeclaration(e1.getColumn());
 
 			StringBuilder sql = new StringBuilder("ALTER TABLE " + tableName + " ");
 			sql.append(" ADD " + columnName + " " + columnDeclaration + (e1.getColumn().isNotNull() || e1.getColumn().isKey() ? " NOT NULL" : " NULL"));
@@ -738,7 +740,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void dropTable(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 		String sql = "DROP TABLE " + tablename + " CASCADE";
 
 		Log.debugsql(sql);
@@ -757,12 +759,12 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	@Override
 	public void dropSequence(Class<BaseVo> classe, DAOManager manager) throws DAOException {
 		try {
-			sequenceExists(classe, manager);
+			this.sequenceExists(classe, manager);
 		} catch (SequenceNotExistsException e1) {
 			return;
 		}
 
-		String sequenceName = getSequenceName(classe);
+		String sequenceName = this.getSequenceName(classe);
 
 		try {
 			if (sequenceName == null) {
@@ -797,7 +799,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 			if (constraints != null) {
 				for (UniqueConstraint constraint : constraints) {
 
-					ResultSet result = manager.getConnection().getMetaData().getIndexInfo(null, null, getTablename(classe), true, true);
+					ResultSet result = manager.getConnection().getMetaData().getIndexInfo(null, null, this.getTablename(classe), true, true);
 
 					boolean found = false;
 
@@ -830,7 +832,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		}
 
 		try {
-			String sql = "ALTER TABLE " + getTablename(classe) + " ADD CONSTRAINT " + constraint.constraintName() + " UNIQUE (";
+			String sql = "ALTER TABLE " + this.getTablename(classe) + " ADD CONSTRAINT " + constraint.constraintName() + " UNIQUE (";
 
 			if (constraint.column() != null && !constraint.column().trim().equals("")) {
 				sql += constraint.column() + ", ";
@@ -887,11 +889,11 @@ public class PostgresSQLBuilder extends SQLBuilder {
 				Join join = f.getAnnotation(Join.class);
 				if (join != null) {
 
-					String tableName = getTablename(classe);
+					String tableName = this.getTablename(classe);
 
-					String tableRemote = getTableNameRemote(f, join);
+					String tableRemote = this.getTableNameRemote(f, join);
 
-					String constraintName = getForeignKeyName(classe, join, f);
+					String constraintName = this.getForeignKeyName(classe, join, f);
 
 					String sql = "SELECT * FROM information_schema.table_constraints tc WHERE table_name = ? AND constraint_type = 'FOREIGN KEY' AND constraint_name = ?";
 
@@ -923,7 +925,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		String tableRemote = join.tableRemote();
 
 		if (tableRemote == null || tableRemote.trim().equals("")) {
-			tableRemote = getTablename(f.getType());
+			tableRemote = this.getTablename(f.getType());
 		}
 		return tableRemote;
 	}
@@ -931,9 +933,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	private String getForeignKeyName(Class<BaseVo> classe, Join join, Field field) throws DAOException {
 		String fk = "fk_";
 
-		fk += getTablename(classe);
+		fk += this.getTablename(classe);
 		fk += "_";
-		fk += getTableNameRemote(field, join);
+		fk += this.getTableNameRemote(field, join);
 
 		return fk;
 	}
@@ -942,7 +944,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	public void createForeignKey(Class<BaseVo> voClass, Join join, Field field, DAOManager manager) throws DAOException {
 		// TODO Criar chave estrangeira
 
-		String sql = "ALTER TABLE " + getTablename(voClass) + " ADD CONSTRAINT " + getForeignKeyName(voClass, join, field);
+		String sql = "ALTER TABLE " + this.getTablename(voClass) + " ADD CONSTRAINT " + this.getForeignKeyName(voClass, join, field);
 		sql += "  FOREIGN KEY (";
 
 		for (String columnLocal : join.columnsLocal()) {
@@ -952,7 +954,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		// Tira a ultima virgula e espaco
 		sql = sql.substring(0, sql.length() - 2);
 
-		sql += ") REFERENCES " + getTableNameRemote(field, join) + " (";
+		sql += ") REFERENCES " + this.getTableNameRemote(field, join) + " (";
 
 		for (String columnRemote : join.columnsRemote()) {
 			sql += columnRemote + ", ";
@@ -999,7 +1001,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		int posicao = 0;
 
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 
 			// Setar parametros
 			if (c != null) {
@@ -1085,7 +1087,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		// int posicao = 0;
 
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 			Join join = f.getAnnotation(Join.class);
 
 			// Setar parametros
@@ -1146,9 +1148,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 					if (vo2 != null && !controle.isMaximo()) {
 						controle.incrementaInteracoes();
 
-						String prefix2 = join.tableAlias().equals("") ? getTablename(f.getType()) : join.tableAlias();
+						String prefix2 = join.tableAlias().equals("") ? this.getTablename(f.getType()) : join.tableAlias();
 
-						setSelectWhereParameters(prepared, vo2, (Class<BaseVo>) vo2.getClass(), false, prefix2, controle, posicao);
+						this.setSelectWhereParameters(prepared, vo2, (Class<BaseVo>) vo2.getClass(), false, prefix2, controle, posicao);
 					}
 				}
 			}
@@ -1170,7 +1172,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 		// Passo 1 - Somente os atributos
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 
 			// Setar parametros
 			if (c != null && !c.isKey()) {
@@ -1220,7 +1222,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 		// Passo 2 - Somente os campos chave
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 
 			// Setar parametros
 			if (c != null && c.isKey()) {
@@ -1274,7 +1276,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 		int posicao = 0;
 
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 
 			// Setar parametros
 			if (c != null && c.isKey()) {
@@ -1332,12 +1334,9 @@ public class PostgresSQLBuilder extends SQLBuilder {
 	 */
 	@Override
 	public void resultToVo(BaseVo vo, ResultSet result, String prefix, DaoControle controle) throws DAOException {
-
-		Log.info("ResultToVo - " + vo.getClass());
-
 		for (Field f : vo.getClass().getDeclaredFields()) {
-			Column c = getColumn(f);
-			Join j = getJoin(f);
+			Column c = this.getColumn(f);
+			Join j = this.getJoin(f);
 
 			if (c != null) {
 
@@ -1347,7 +1346,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 				// Setter nao pode ser nulo
 				if (setter != null) {
 
-					String columnName = prefix + getColumnName(f);
+					String columnName = prefix + this.getColumnName(f);
 
 					// Log.info("Column Name : " + columnName);
 
@@ -1418,7 +1417,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 					boolean hasNull = false;
 
-					String prefix2 = j.tableAlias().equals("") ? getTablename(f.getType()) : j.tableAlias();
+					String prefix2 = j.tableAlias().equals("") ? this.getTablename(f.getType()) : j.tableAlias();
 
 					for (int i = 0; i < j.columnsRemote().length; i++) {
 						String columnOrigin = j.columnsRemote()[0];
@@ -1453,7 +1452,7 @@ public class PostgresSQLBuilder extends SQLBuilder {
 
 							if (!controle.isMaximo()) {
 								controle.incrementaInteracoes();
-								resultToVo((BaseVo) voChild, result, prefix + prefix2 + "_", controle);
+								this.resultToVo((BaseVo) voChild, result, prefix + prefix2 + "_", controle);
 							}
 						}
 					}

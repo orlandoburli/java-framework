@@ -40,7 +40,7 @@ public final class Log {
 
 		if (level.getLevel() <= levelMin) {
 			Calendar cal = Calendar.getInstance();
-			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss:SSS");
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss:SSS");
 			System.out.println(sdf.format(cal.getTime()) + "| " + stackTrace[linha].getClassName() + " (" + stackTrace[linha].getLineNumber() + ") |" + level.getLevel() + "|" + level.getDescription() + "|" + message);
 
 			if (message instanceof Exception) {

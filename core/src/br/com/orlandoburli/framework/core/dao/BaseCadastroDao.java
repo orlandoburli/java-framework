@@ -36,24 +36,24 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	/**
 	 * Insere um objeto no banco de dados.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto vo a ser inserido.
 	 * @throws DAOException
 	 */
 	public void inserir(E vo) throws DAOException {
 
-		checkTable();
+		this.checkTable();
 
-		String sql = getBuilder().buildSqlInsertStatement(getVOClass());
+		String sql = this.getBuilder().buildSqlInsertStatement(this.getVOClass());
 
 		Log.debugsql(sql);
 
 		try {
 
-			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+			PreparedStatement prepared = this.getManager().getConnection().prepareStatement(sql);
 
-			getBuilder().setInsertParameters(prepared, vo, getVOClass(), getSequenceNextVal());
+			this.getBuilder().setInsertParameters(prepared, vo, this.getVOClass(), this.getSequenceNextVal());
 
 			prepared.execute();
 
@@ -66,23 +66,23 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	/**
 	 * Atualiza um objeto no banco de dados.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto a ser atualizado.
 	 * @throws DAOException
 	 */
 	public void update(E vo) throws DAOException {
-		checkTable();
+		this.checkTable();
 
-		String sql = getBuilder().buildSqlUpdateStatement(getVOClass());
+		String sql = this.getBuilder().buildSqlUpdateStatement(this.getVOClass());
 
 		Log.debugsql(sql);
 
 		try {
 
-			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+			PreparedStatement prepared = this.getManager().getConnection().prepareStatement(sql);
 
-			getBuilder().setUpdateParameters(prepared, vo, getVOClass());
+			this.getBuilder().setUpdateParameters(prepared, vo, this.getVOClass());
 
 			prepared.execute();
 
@@ -94,23 +94,23 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	/**
 	 * Exclui um objeto no banco de dados.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto a ser excluido.
 	 * @throws DAOException
 	 */
 	public void delete(E vo) throws DAOException {
-		checkTable();
+		this.checkTable();
 
-		String sql = getBuilder().buildSqlDeleteStatement(getVOClass());
+		String sql = this.getBuilder().buildSqlDeleteStatement(this.getVOClass());
 
 		Log.debugsql(sql);
 
 		try {
 
-			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+			PreparedStatement prepared = this.getManager().getConnection().prepareStatement(sql);
 
-			getBuilder().setDeleteParameters(prepared, vo, getVOClass());
+			this.getBuilder().setDeleteParameters(prepared, vo, this.getVOClass());
 
 			prepared.execute();
 
@@ -122,7 +122,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	/**
 	 * Retorna um objeto do banco de dados.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto com os parametros (chave) a serem buscados.
 	 * @return Objeto VO preenchido, se encontrado.
@@ -130,7 +130,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 */
 	public E get(E vo) throws DAOException {
 
-		List<E> list = getList(vo, null, null, null, null, true);
+		List<E> list = this.getList(vo, null, null, null, null, true);
 
 		if (list.size() == 1) {
 			return list.get(0);
@@ -142,21 +142,21 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	/**
 	 * Retorna um objeto do banco de dados pela sua chave (Só funciona quando o
 	 * item tem id único,não funciona em chaves compostas).
-	 * 
+	 *
 	 * @param Chave
 	 *            do registro.
-	 * 
+	 *
 	 * @return Objeto VO preenchido, se encontrado.
 	 * @throws DAOException
 	 */
 	public E get(Object key) throws DAOException {
 
 		@SuppressWarnings("unchecked")
-		E filter = (E) DaoUtils.getNewObject(getVOClass());
+		E filter = (E) DaoUtils.getNewObject(this.getVOClass());
 
-		DaoUtils.setValueId(getVOClass(), filter, key);
+		DaoUtils.setValueId(this.getVOClass(), filter, key);
 
-		List<E> list = getList(filter, null, null, null, null, true);
+		List<E> list = this.getList(filter, null, null, null, null, true);
 
 		if (list.size() == 1) {
 			return list.get(0);
@@ -167,34 +167,34 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	/**
 	 * Retorna uma lista com todos os itens do banco de dados, sem filtros.
-	 * 
+	 *
 	 * @return List do tipo <b>E</b>.
 	 * @throws DAOException
 	 */
 	public List<E> getList() throws DAOException {
-		return getList(null, null, null, null, null, false);
+		return this.getList(null, null, null, null, null, false);
 	}
 
 	/**
 	 * Retorna uma lista dos itens do banco de dados, usando como filtro os
 	 * valores setados em <b>filter</b>.<br/>
 	 * Todos os valores nao-nulos serao considerados no filtro.
-	 * 
+	 *
 	 * @param filter
 	 *            Objeto do tipo <b>E</b> com os valores a serem filtrados.
 	 * @return List do tipo <b>E</b>.
 	 * @throws DAOException
 	 */
 	public List<E> getList(E filter) throws DAOException {
-		return getList(filter, null, null, null, null, false);
+		return this.getList(filter, null, null, null, null, false);
 	}
 
 	/**
-	 * 
+	 *
 	 * Retorna uma lista dos itens do banco de dados, usando como filtro os
 	 * valores setados em <b>filter</b>.<br/>
 	 * Todos os valores nao-nulos serao considerados no filtro.
-	 * 
+	 *
 	 * @param filter
 	 *            Objeto do tipo <b>E</b> com os valores a serem filtrados.
 	 * @param whereCondition
@@ -213,14 +213,14 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	 * @throws DAOException
 	 */
 	public List<E> getList(E filter, String whereCondition, String orderFields, Integer pageNumber, Integer pageSize) throws DAOException {
-		return getList(filter, whereCondition, orderFields, pageNumber, pageSize, false);
+		return this.getList(filter, whereCondition, orderFields, pageNumber, pageSize, false);
 	}
 
 	/**
 	 * Retorna uma lista dos itens do banco de dados, usando como filtro os
 	 * valores setados em <b>filter</b>.<br/>
 	 * Todos os valores nao-nulos serao considerados no filtro.
-	 * 
+	 *
 	 * @param filter
 	 *            Objeto do tipo <b>E</b> com os valores a serem filtrados.
 	 * @param keysOnly
@@ -241,36 +241,38 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		// TODO Implementar pageNumber;
 		// TODO Implementar pageSize;
 
-		checkTable();
+		this.checkTable();
 
 		StringBuilder sqlWhere = new StringBuilder();
 
-		getBuilder().buildSqlWhereStatement(sqlWhere, getVOClass(), filter, keysOnly, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()));
+		String sql = this.getBuilder().buildSqlSelectStatement(this.getVOClass(), this.getMaxSubJoins());
 
-		String sql = getBuilder().buildSqlSelectStatement(getVOClass(), getMaxSubJoins()) + sqlWhere.toString();
+		this.getBuilder().buildSqlWhereStatement(sqlWhere, this.getVOClass(), filter, keysOnly, this.getBuilder().getTablename(this.getVOClass()), new DaoControle(this.getMaxSubJoins()));
 
-		// TODO Construir um teste para este item
-		sql += "\n" + getBuilder().buildSpecialWhereConditions(getVOClass(), whereCondition);
-
-		// TODO Construir um teste para este item
-		sql += "\n" + getBuilder().buildSqlOrderByStatement(orderFields);
+		sql += sqlWhere.toString();
 
 		// TODO Construir um teste para este item
-		sql += "\n" + getBuilder().buildSqlLimit(sql, pageNumber, pageSize);
+		sql += "\n" + this.getBuilder().buildSpecialWhereConditions(this.getVOClass(), whereCondition);
+
+		// TODO Construir um teste para este item
+		sql += "\n" + this.getBuilder().buildSqlOrderByStatement(orderFields);
+
+		// TODO Construir um teste para este item
+		sql += "\n" + this.getBuilder().buildSqlLimit(sql, pageNumber, pageSize);
 
 		Log.debugsql(sql);
 
 		List<E> list = new ArrayList<E>();
 
 		try {
-			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+			PreparedStatement prepared = this.getManager().getConnection().prepareStatement(sql);
 
-			getBuilder().setSelectWhereParameters(prepared, filter, getVOClass(), keysOnly, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
+			this.getBuilder().setSelectWhereParameters(prepared, filter, this.getVOClass(), keysOnly, this.getBuilder().getTablename(this.getVOClass()), new DaoControle(this.getMaxSubJoins()), new DaoControle(0));
 
 			ResultSet result = prepared.executeQuery();
 
 			while (result.next()) {
-				E item = (E) DaoUtils.getNewObject(getVOClass());
+				E item = (E) DaoUtils.getNewObject(this.getVOClass());
 
 				// Seta o vo como nao-novo, pois estamos buscando do banco de
 				// dados.
@@ -278,7 +280,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 				// String tablename = getBuilder().getTablename(getVOClass());
 
-				getBuilder().resultToVo(item, result, getBuilder().getTablename(getVOClass()) + "_", new DaoControle(getMaxSubJoins()));
+				this.getBuilder().resultToVo(item, result, this.getBuilder().getTablename(this.getVOClass()) + "_", new DaoControle(this.getMaxSubJoins()));
 
 				list.add(item);
 			}
@@ -294,23 +296,23 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	public int getPageCount(E filter, String whereCondition, int pageSize) throws DAOException {
 		// TODO Escrever um teste para este metodo
-		checkTable();
+		this.checkTable();
 
 		StringBuilder sqlWhere = new StringBuilder();
 
-		getBuilder().buildSqlWhereStatement(sqlWhere, getVOClass(), filter, false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()));
+		this.getBuilder().buildSqlWhereStatement(sqlWhere, this.getVOClass(), filter, false, this.getBuilder().getTablename(this.getVOClass()), new DaoControle(this.getMaxSubJoins()));
 
-		String sql = getBuilder().buildSqlCountStatement(getVOClass(), getMaxSubJoins()) + sqlWhere.toString();
+		String sql = this.getBuilder().buildSqlCountStatement(this.getVOClass(), this.getMaxSubJoins()) + sqlWhere.toString();
 
 		// TODO Construir um teste para este item
-		sql += "\n" + getBuilder().buildSpecialWhereConditions(getVOClass(), whereCondition);
+		sql += "\n" + this.getBuilder().buildSpecialWhereConditions(this.getVOClass(), whereCondition);
 
 		Log.debugsql(sql);
 
 		try {
-			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+			PreparedStatement prepared = this.getManager().getConnection().prepareStatement(sql);
 
-			getBuilder().setSelectWhereParameters(prepared, filter, getVOClass(), false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
+			this.getBuilder().setSelectWhereParameters(prepared, filter, this.getVOClass(), false, this.getBuilder().getTablename(this.getVOClass()), new DaoControle(this.getMaxSubJoins()), new DaoControle(0));
 
 			ResultSet result = prepared.executeQuery();
 
@@ -338,23 +340,23 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	public int getListCount(E filter, String whereCondition) throws DAOException {
 		// TODO Escrever um teste para este metodo
-		checkTable();
+		this.checkTable();
 
 		StringBuilder sqlWhere = new StringBuilder();
 
-		getBuilder().buildSqlWhereStatement(sqlWhere, getVOClass(), filter, false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()));
+		this.getBuilder().buildSqlWhereStatement(sqlWhere, this.getVOClass(), filter, false, this.getBuilder().getTablename(this.getVOClass()), new DaoControle(this.getMaxSubJoins()));
 
-		String sql = getBuilder().buildSqlCountStatement(getVOClass(), getMaxSubJoins()) + sqlWhere.toString();
+		String sql = this.getBuilder().buildSqlCountStatement(this.getVOClass(), this.getMaxSubJoins()) + sqlWhere.toString();
 
 		// TODO Construir um teste para este item
-		sql += "\n" + getBuilder().buildSpecialWhereConditions(getVOClass(), whereCondition);
+		sql += "\n" + this.getBuilder().buildSpecialWhereConditions(this.getVOClass(), whereCondition);
 
 		Log.debugsql(sql);
 
 		try {
-			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+			PreparedStatement prepared = this.getManager().getConnection().prepareStatement(sql);
 
-			getBuilder().setSelectWhereParameters(prepared, filter, getVOClass(), false, getBuilder().getTablename(getVOClass()), new DaoControle(getMaxSubJoins()), new DaoControle(0));
+			this.getBuilder().setSelectWhereParameters(prepared, filter, this.getVOClass(), false, this.getBuilder().getTablename(this.getVOClass()), new DaoControle(this.getMaxSubJoins()), new DaoControle(0));
 
 			ResultSet result = prepared.executeQuery();
 
@@ -378,12 +380,12 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	/**
 	 * Retorna o proximo valor da sequence.
-	 * 
+	 *
 	 * @return Proximo valor da sequence.
 	 * @throws SQLDaoException
 	 */
 	public Integer getSequenceNextVal() throws SQLDaoException {
-		String sql = getBuilder().buildSqlNextSequence(getVOClass());
+		String sql = this.getBuilder().buildSqlNextSequence(this.getVOClass());
 
 		Log.debugsql(sql);
 
@@ -392,7 +394,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 		}
 
 		try {
-			PreparedStatement prepared = getManager().getConnection().prepareStatement(sql);
+			PreparedStatement prepared = this.getManager().getConnection().prepareStatement(sql);
 			ResultSet result = prepared.executeQuery();
 
 			if (result.next()) {
@@ -421,23 +423,23 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	/**
 	 * Checa se a tabela existe, e se os tipos de dados sao consistentes com o
 	 * modelo de dados sugerido.
-	 * 
+	 *
 	 * @return
-	 * 
+	 *
 	 * @throws DAOException
 	 */
 	public BaseCadastroDao<E> checkTable() throws DAOException {
-		if (isInBuffer()) {
+		if (this.isInBuffer()) {
 			return this;
 		}
 
-		if (isUpdateSchema()) {
+		if (this.isUpdateSchema()) {
 			try {
 				// Checa se a sequence existe
-				getBuilder().sequenceExists(getVOClass(), getManager());
+				this.getBuilder().sequenceExists(this.getVOClass(), this.getManager());
 			} catch (SequenceNotExistsException e) {
 				try {
-					getBuilder().createSequence(getVOClass(), getManager());
+					this.getBuilder().createSequence(this.getVOClass(), this.getManager());
 				} catch (DAOException e1) {
 					Log.critical(e1);
 				}
@@ -445,9 +447,9 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 			try {
 				// Checa se a tabela exsite
-				getBuilder().tableExists(getVOClass(), getManager());
+				this.getBuilder().tableExists(this.getVOClass(), this.getManager());
 			} catch (TableNotExistsException e) {
-				getBuilder().createTable(getVOClass(), getManager());
+				this.getBuilder().createTable(this.getVOClass(), this.getManager());
 			}
 
 			boolean flagOk = false;
@@ -456,10 +458,10 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 			while (!flagOk) {
 				try {
 					// Checa se a tabela esta ok com seus campos
-					getBuilder().tableCheck(getVOClass(), getManager());
+					this.getBuilder().tableCheck(this.getVOClass(), this.getManager());
 					flagOk = true;
 				} catch (WrongNotNullException | WrongColumnException | ColumnNotFoundException e) {
-					getBuilder().alterTable(getVOClass(), getManager(), e);
+					this.getBuilder().alterTable(this.getVOClass(), this.getManager(), e);
 				}
 			}
 
@@ -468,10 +470,10 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 			while (!flagOk) {
 				try {
-					getBuilder().constraintsCheck(getVOClass(), getManager());
+					this.getBuilder().constraintsCheck(this.getVOClass(), this.getManager());
 					flagOk = true;
 				} catch (UniqueConstraintNotFoundException e) {
-					getBuilder().createUniqueConstraint(getVOClass(), e.getConstraint(), getManager());
+					this.getBuilder().createUniqueConstraint(this.getVOClass(), e.getConstraint(), this.getManager());
 				}
 			}
 
@@ -480,14 +482,14 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 			while (!flagOk) {
 				try {
-					getBuilder().foreignKeysCheck(getVOClass(), getManager());
+					this.getBuilder().foreignKeysCheck(this.getVOClass(), this.getManager());
 					flagOk = true;
 				} catch (ForeignKeyNotFoundException e) {
-					getBuilder().createForeignKey(getVOClass(), e.getJoin(), e.getField(), getManager());
+					this.getBuilder().createForeignKey(this.getVOClass(), e.getJoin(), e.getField(), this.getManager());
 				}
 			}
 
-			addToBuffer();
+			this.addToBuffer();
 		}
 
 		return this;
@@ -496,14 +498,14 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	public BaseCadastroDao<E> dropTable() throws DAOException {
 
 		try {
-			getBuilder().tableExists(getVOClass(), getManager());
+			this.getBuilder().tableExists(this.getVOClass(), this.getManager());
 		} catch (TableNotExistsException e) {
 			return this;
 		}
 
-		getBuilder().dropTable(getVOClass(), getManager());
+		this.getBuilder().dropTable(this.getVOClass(), this.getManager());
 
-		removeFromBuffer();
+		this.removeFromBuffer();
 
 		return this;
 	}
@@ -511,31 +513,31 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	public BaseCadastroDao<E> dropSequence() throws DAOException {
 
 		try {
-			getBuilder().sequenceExists(getVOClass(), getManager());
+			this.getBuilder().sequenceExists(this.getVOClass(), this.getManager());
 		} catch (SequenceNotExistsException e) {
 			return this;
 		}
 
-		getBuilder().dropSequence(getVOClass(), getManager());
+		this.getBuilder().dropSequence(this.getVOClass(), this.getManager());
 
-		removeFromBuffer();
+		this.removeFromBuffer();
 
 		return this;
 	}
 
 	/**
 	 * Indica se a tabela esta no buffer de controle de checagem de tabelas.
-	 * 
+	 *
 	 * @return True se a tabela estiver no buffer.
 	 * @throws DAOException
 	 */
 	private boolean isInBuffer() throws DAOException {
-		if (!isDbCheck()) {
+		if (!this.isDbCheck()) {
 			return true;
 		}
 
-		for (String s : BUFFER_TABELAS) {
-			String tableName = getBuilder().getTablename(getVOClass());
+		for (String s : BaseCadastroDao.BUFFER_TABELAS) {
+			String tableName = this.getBuilder().getTablename(this.getVOClass());
 
 			if (s.equals(tableName)) {
 				return true;
@@ -545,11 +547,11 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	}
 
 	private void removeFromBuffer() throws DAOException {
-		for (String s : BUFFER_TABELAS) {
-			String tableName = getBuilder().getTablename(getVOClass());
+		for (String s : BaseCadastroDao.BUFFER_TABELAS) {
+			String tableName = this.getBuilder().getTablename(this.getVOClass());
 
 			if (s.equals(tableName)) {
-				BUFFER_TABELAS.remove(s);
+				BaseCadastroDao.BUFFER_TABELAS.remove(s);
 				break;
 			}
 		}
@@ -558,25 +560,25 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 	/**
 	 * Adiciona a coluna ao buffer de controle de checagem, para evitar dupla
 	 * checagem da estrutura.
-	 * 
+	 *
 	 * @throws DAOException
 	 */
 	private void addToBuffer() throws DAOException {
-		String tableName = getBuilder().getTablename(getVOClass());
-		BUFFER_TABELAS.add(tableName);
+		String tableName = this.getBuilder().getTablename(this.getVOClass());
+		BaseCadastroDao.BUFFER_TABELAS.add(tableName);
 	}
 
 	/**
 	 * Forca a limpeza do buffer para forcar a re-checagem das tabelas.
 	 */
 	public static void clearBuffer() {
-		BUFFER_TABELAS.clear();
+		BaseCadastroDao.BUFFER_TABELAS.clear();
 	}
 
 	/**
 	 * Esta funcao retorna quantos niveis no maximo o DAO ira seguir no join, a
 	 * fim de evitar loop's infinitos por auto-referencia.
-	 * 
+	 *
 	 * @return Numero de niveis.
 	 */
 	public int getMaxSubJoins() {
@@ -585,7 +587,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	/**
 	 * Indica se é pra checar o schema
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isDbCheck() {
@@ -600,7 +602,7 @@ public abstract class BaseCadastroDao<E extends BaseVo> extends BaseDao {
 
 	/**
 	 * Indica se é para dar update nos objetos de banco de dados
-	 * 
+	 *
 	 * @return
 	 */
 	public boolean isUpdateSchema() {

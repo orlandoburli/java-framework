@@ -8,7 +8,7 @@ import br.com.orlandoburli.framework.core.vo.exceptions.WrongDomainException;
 public abstract class BaseDomain {
 
 	public BaseDomain() {
-		if (getValues().length != getDescriptions().length) {
+		if (this.getValues().length != this.getDescriptions().length) {
 			throw new WrongDomainException();
 		}
 	}
@@ -22,7 +22,7 @@ public abstract class BaseDomain {
 			return false;
 		}
 
-		for (String s : getValues()) {
+		for (String s : this.getValues()) {
 			if (s.equals(value)) {
 				return true;
 			}
@@ -35,11 +35,11 @@ public abstract class BaseDomain {
 		if (value == null) {
 			return null;
 		}
-		String[] values = getValues();
+		String[] values = this.getValues();
 
 		for (int i = 0; i < values.length; i++) {
 			if (values[i].equals(value.toString())) {
-				return getDescriptions()[i];
+				return this.getDescriptions()[i];
 			}
 		}
 
@@ -49,8 +49,8 @@ public abstract class BaseDomain {
 	public List<DomainVo> getList() {
 		List<DomainVo> list = new ArrayList<DomainVo>();
 
-		for (int i = 0; i < getValues().length; i++) {
-			list.add(new DomainVo(getValues()[i], getDescriptions()[i]));
+		for (int i = 0; i < this.getValues().length; i++) {
+			list.add(new DomainVo(this.getValues()[i], this.getDescriptions()[i]));
 		}
 
 		return list;

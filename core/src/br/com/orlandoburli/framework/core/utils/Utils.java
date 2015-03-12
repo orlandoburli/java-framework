@@ -90,7 +90,7 @@ public final class Utils {
 		sb.append("[");
 
 		for (Object object : list) {
-			sb.append(voToJson(object) + ",");
+			sb.append(Utils.voToJson(object) + ",");
 		}
 
 		sb.delete(sb.length() - 1, sb.length());
@@ -110,7 +110,7 @@ public final class Utils {
 
 		sb.append("\"results\":");
 
-		sb.append(voToJson(list));
+		sb.append(Utils.voToJson(list));
 		sb.append(",\"more\": false");
 		sb.append("}");
 
@@ -639,6 +639,24 @@ public final class Utils {
 		result = result.substring(0, result.length() - 2);
 
 		return result;
+	}
+
+	public static BigDecimal stringToBigDecimal(String texto) {
+		try {
+			int multplicador = 1;
+			if (texto.startsWith("(") && texto.endsWith(")")) {
+				multplicador = -1;
+			}
+			BigDecimal valor = new BigDecimal(texto.replace(".", "").replace("(", "").replace(")", "").replace(",", "."));
+			valor = valor.multiply(new BigDecimal(multplicador));
+			valor = valor.setScale(2, BigDecimal.ROUND_CEILING);
+			return valor;
+
+		} catch (NumberFormatException e) {
+			//
+		}
+
+		return null;
 	}
 
 }

@@ -5,6 +5,7 @@ public class JsonItemVo {
 	private String id;
 	private String label;
 	private String value;
+	private Object original;
 
 	public String getId() {
 		return id;
@@ -28,5 +29,13 @@ public class JsonItemVo {
 
 	public void setValue(String value) {
 		this.value = value;
+	}
+
+	public Object getOriginal() {
+		return original;
+	}
+
+	public void setOriginal(Object original) {
+		this.original = original;
 	}
 }

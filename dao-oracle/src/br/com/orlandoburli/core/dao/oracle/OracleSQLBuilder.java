@@ -11,7 +11,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import br.com.orlandoburli.framework.core.dao.DAOManager;
 import br.com.orlandoburli.framework.core.dao.DaoControle;
@@ -41,16 +43,137 @@ import br.com.orlandoburli.framework.core.vo.BaseVo;
 
 public class OracleSQLBuilder extends SQLBuilder {
 
+	/**
+	 * Map das tabelas traduzidas <br/>
+	 * <b>Tabela</b> - Objeto que tem a classe da tabela, o nome e o nick <br/>
+	 * <b>Class<?></b> - Classe da tabela
+	 */
+	private HashMap<Class<?>, Tabela> tabelasMap;
+	/**
+	 * Map das colunas traduzidas <br/>
+	 * <b>Field</b> - Objeto que tem o Field e o apelido dado no select <br/>
+	 * <b>String</b> - Chave da coluna que será TABELA_COLUNA
+	 */
+	private HashMap<Field, Coluna> colunasMap;
+
+	/**
+	 * Usa para que nao se repita os nomes de tabelas usadas
+	 */
+	private List<String> apelidosTabelasUsadas;
+	/**
+	 * Usa para que nao se repita os nomes de colunas usadas
+	 */
+	private List<String> apelidosCamposUsadas;
+
+	public OracleSQLBuilder() {
+		this.tabelasMap = new HashMap<Class<?>, OracleSQLBuilder.Tabela>();
+		this.colunasMap = new HashMap<Field, OracleSQLBuilder.Coluna>();
+
+		this.apelidosCamposUsadas = new ArrayList<String>();
+		this.apelidosTabelasUsadas = new ArrayList<String>();
+	}
+
+	protected class Tabela {
+
+		private String tableName;
+		private String nick;
+
+		public Tabela(String tableName, String nick) {
+			this.setTableName(tableName);
+			this.setNick(nick);
+		}
+
+		public String getTableName() {
+			return this.tableName;
+		}
+
+		public void setTableName(String tableName) {
+			this.tableName = tableName;
+		}
+
+		public String getNick() {
+			return this.nick;
+		}
+
+		public void setNick(String nick) {
+			this.nick = nick;
+		}
+	}
+
+	protected class Coluna {
+		private Field f;
+		private String apelido;
+		private Tabela tabela;
+
+		public Coluna(Field f, String apelido, Tabela tabela) {
+			this.f = f;
+			this.apelido = apelido;
+			this.setTabela(tabela);
+		}
+
+		public Field getF() {
+			return this.f;
+		}
+
+		public void setF(Field f) {
+			this.f = f;
+		}
+
+		public String getApelido() {
+			return this.apelido;
+		}
+
+		public void setApelido(String apelido) {
+			this.apelido = apelido;
+		}
+
+		public Tabela getTabela() {
+			return this.tabela;
+		}
+
+		public void setTabela(Tabela tabela) {
+			this.tabela = tabela;
+		}
+	}
+
+	public String buildTableNickName() {
+		int hash = Math.abs(new Random().nextInt(50));
+
+		String nick = "T" + hash;
+
+		while (this.apelidosTabelasUsadas.contains(nick)) {
+			hash = Math.abs(new Random().nextInt(50));
+
+			nick = "T" + hash;
+		}
+
+		return nick;
+	}
+
+	public String buildFieldNickName() {
+		int hash = Math.abs(new Random().nextInt(100));
+
+		String nick = "F" + hash;
+
+		while (this.apelidosCamposUsadas.contains(nick)) {
+			hash = Math.abs(new Random().nextInt(100));
+
+			nick = "F" + hash;
+		}
+
+		return nick;
+	}
+
 	@Override
 	public String buildSqlInsertStatement(Class<BaseVo> classe) throws DAOException {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append("INSERT INTO " + getTablename(classe) + " (");
+		sql.append("INSERT INTO " + this.getTablename(classe) + " (");
 
 		Field[] fields = classe.getDeclaredFields();
 
 		for (Field f : fields) {
-			if (getColumn(f) != null) {
+			if (this.getColumn(f) != null) {
 				sql.append(this.getColumnName(f) + ", ");
 			}
 		}
@@ -60,7 +183,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 		sql.append(") VALUES (");
 
 		for (Field f : fields) {
-			if (getColumn(f) != null) {
+			if (this.getColumn(f) != null) {
 				sql.append("?, ");
 			}
 		}
@@ -74,10 +197,10 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	@Override
 	public String buildSqlNextSequence(Class<BaseVo> classe) {
-		String sequenceName = getSequenceName(classe);
-		
-		String schema = getSchemaName(classe);
-		
+		String sequenceName = this.getSequenceName(classe);
+
+		String schema = this.getSchemaName(classe);
+
 		if (schema != null && !schema.trim().equals("")) {
 			sequenceName = schema + "." + sequenceName;
 		}
@@ -94,12 +217,18 @@ public class OracleSQLBuilder extends SQLBuilder {
 	public String buildSqlUpdateStatement(Class<BaseVo> classe) throws DAOException {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append("\n UPDATE " + getTablename(classe) + " SET ");
+
+		String nickName = this.buildTableNickName();
+		String tableName = this.getTablename(classe);
+
+		this.tabelasMap.put(classe, new Tabela(tableName, nickName));
+
+		sql.append("\n UPDATE " + tableName + " " + nickName + " SET ");
 
 		Field[] fields = classe.getDeclaredFields();
 
 		for (Field f : fields) {
-			Column column = getColumn(f);
+			Column column = this.getColumn(f);
 			if (column != null && !column.isKey()) {
 				sql.append("\n        " + this.getColumnName(f) + " = ?, ");
 			}
@@ -107,7 +236,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 		sql.delete(sql.length() - 2, sql.length());
 
-		buildSqlWhereStatement(sql, classe, null, true, getTablename(classe), new DaoControle(0));
+		this.buildSqlWhereStatement(sql, classe, null, true, tableName, new DaoControle(0));
 
 		return sql.toString();
 	}
@@ -116,9 +245,9 @@ public class OracleSQLBuilder extends SQLBuilder {
 	public String buildSqlDeleteStatement(Class<BaseVo> classe) throws DAOException {
 
 		StringBuilder sql = new StringBuilder();
-		sql.append("\nDELETE FROM " + getTablename(classe) + " ");
+		sql.append("\nDELETE FROM " + this.getTablename(classe) + " ");
 
-		buildSqlWhereStatement(sql, classe, null, true, getTablename(classe), new DaoControle(0));
+		this.buildSqlWhereStatement(sql, classe, null, true, this.getTablename(classe), new DaoControle(0));
 
 		return sql.toString();
 	}
@@ -129,21 +258,25 @@ public class OracleSQLBuilder extends SQLBuilder {
 		StringBuilder sql = new StringBuilder();
 		sql.append("\n SELECT");
 
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
+
+		String nick = this.buildTableNickName();
+
+		this.tabelasMap.put(classe, new Tabela(tablename, nick));
 
 		Field[] fields = classe.getDeclaredFields();
 
-		buildSelectFields(classe, sql, fields, "T1", new DaoControle(maxSubJoins));
+		this.buildSelectFields(classe, sql, fields, nick, new DaoControle(maxSubJoins));
 
 		// Remove a virgula e o espaco do final
 		sql.delete(sql.length() - 2, sql.length());
 
-		sql.append("\n\n   FROM " + tablename + " T1");
+		sql.append("\n\n   FROM " + tablename + " " + nick);
 
 		// Loop dos Joins Encontrados
 		List<String> buff = new ArrayList<String>();
 
-		buidlSelectJoins(sql, fields, tablename, buff, "T1_", tablename, new DaoControle(maxSubJoins));
+		this.buidlSelectJoins(sql, fields, tablename, buff, nick, tablename, new DaoControle(maxSubJoins));
 
 		return sql.toString();
 	}
@@ -153,7 +286,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 		StringBuilder sql = new StringBuilder();
 		sql.append("\n SELECT");
 
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 
 		sql.append("\n     COUNT(1)");
 
@@ -164,7 +297,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 		Field[] fields = classe.getDeclaredFields();
 
-		buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
+		this.buidlSelectJoins(sql, fields, tablename, buff, tablename + "_", tablename, new DaoControle(maxSubJoins));
 
 		return sql.toString();
 	}
@@ -172,28 +305,32 @@ public class OracleSQLBuilder extends SQLBuilder {
 	@SuppressWarnings("unchecked")
 	public void buildSelectFields(Class<BaseVo> classe, StringBuilder sql, Field[] fields, String prefix, DaoControle controle) throws DAOException {
 		for (Field f : fields) {
-			Join join = getJoin(f);
-			Column column = getColumn(f);
+			Join join = this.getJoin(f);
+			Column column = this.getColumn(f);
+
+			String fieldNickName = this.buildFieldNickName();
+
+			this.colunasMap.put(f, new Coluna(f, fieldNickName, this.tabelasMap.get(classe)));
 
 			if (column != null) {
-				String prefixColumn = prefix + "_";
+				sql.append("\n        " + prefix + "." + this.getColumnName(f) + " AS " + fieldNickName + ", ");
 
-				sql.append("\n        " + prefix + "." + this.getColumnName(f) + " AS " + prefixColumn + this.getColumnName(f) + ", ");
 			} else if (join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
+					// TODO - Ajustar o JOIN
 					// Se o field for do tipo VO, ira fazer select de todas as
 					// suas colunas.
 					Field[] fieldsJoin = f.getType().getDeclaredFields();
 
 					// sql.append("\n");
 
-					String prefix2 = join.tableAlias().equals("") ? getTablename(f.getType()) : join.tableAlias();
+					String prefix2 = join.tableAlias().equals("") ? this.getTablename(f.getType()) : join.tableAlias();
 					prefix2 += "";
 
 					if (!controle.isMaximo()) {
 						controle.incrementaInteracoes();
-						buildSelectFields((Class<BaseVo>) f.getType(), sql, fieldsJoin, prefix + "_" + prefix2, controle);
+						this.buildSelectFields((Class<BaseVo>) f.getType(), sql, fieldsJoin, prefix + "_" + prefix2, controle);
 					}
 				} else {
 					// Join de uma coluna so
@@ -212,14 +349,15 @@ public class OracleSQLBuilder extends SQLBuilder {
 	}
 
 	public void buidlSelectJoins(StringBuilder sql, Field[] fields, String tablename, List<String> buff, String prefix, String tableOrigin, DaoControle controle) throws SecurityException, DAOException {
+		// TODO - Nao testei essa parte ainda!!!
 		for (Field f : fields) {
-			Join join = getJoin(f);
+			Join join = this.getJoin(f);
 
 			if (join != null && join.joinWhen() == JoinWhen.ALWAYS) {
 				String tableJoin = null;
 
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
-					tableJoin = getTablename(f.getType());
+					tableJoin = this.getTablename(f.getType());
 				} else {
 					tableJoin = join.tableRemote();
 				}
@@ -244,7 +382,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 					buff.add(prefix + tableAlias);
 
-					sql.append("\n  " + getJoinType(join) + " " + tableJoin + " " + prefix + tableAlias);
+					sql.append("\n  " + this.getJoinType(join) + " " + tableJoin + " " + prefix + tableAlias);
 					boolean first = true;
 
 					for (int i = 0; i < join.columnsLocal().length; i++) {
@@ -255,7 +393,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 				if (f.getType().getSuperclass().equals(BaseVo.class)) {
 					if (!controle.isMaximo()) {
 						controle.incrementaInteracoes();
-						buidlSelectJoins(sql, f.getType().getDeclaredFields(), tableJoin, buff, prefix + tableAlias + "_", prefix + tableAlias, controle);
+						this.buidlSelectJoins(sql, f.getType().getDeclaredFields(), tableJoin, buff, prefix + tableAlias + "_", prefix + tableAlias, controle);
 					}
 				}
 			}
@@ -291,7 +429,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 			Field[] fields = classe.getDeclaredFields();
 
 			for (Field f : fields) {
-				Column column = getColumn(f);
+				Column column = this.getColumn(f);
 
 				if ((column != null && !keysOnly) || (keysOnly && column != null && column.isKey())) {
 
@@ -304,6 +442,8 @@ public class OracleSQLBuilder extends SQLBuilder {
 					}
 
 					if (value != null || keysOnly) {
+
+						prefix = this.tabelasMap.get(classe).getNick();
 
 						if (f.getType().equals(String.class)) {
 							// Apenas o tipo STRING muda o filtro para LIKE
@@ -327,9 +467,9 @@ public class OracleSQLBuilder extends SQLBuilder {
 					if (value != null && !controle.isMaximo()) {
 						controle.incrementaInteracoes();
 
-						String prefix2 = join.tableAlias().equals("") ? getTablename(f.getType()) : join.tableAlias();
+						String prefix2 = join.tableAlias().equals("") ? this.getTablename(f.getType()) : join.tableAlias();
 
-						buildSqlWhereStatement(sqlWhere, (Class<BaseVo>) f.getType(), (BaseVo) value, false, prefix + "_" + prefix2, controle);
+						this.buildSqlWhereStatement(sqlWhere, (Class<BaseVo>) f.getType(), (BaseVo) value, false, prefix + "_" + prefix2, controle);
 					}
 				}
 			}
@@ -338,7 +478,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void tableExists(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 
 		Log.debug("Checando se a tabela " + tablename + " existe");
 
@@ -358,7 +498,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 	public void sequenceExists(Class<BaseVo> classe, DAOManager manager) throws DAOException {
 		try {
 
-			String sequenceName = getSequenceName(classe);
+			String sequenceName = this.getSequenceName(classe);
 			if (sequenceName == null) {
 				return;
 			}
@@ -375,7 +515,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void tableCheck(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 
 		Log.debug("Checando os campos da tabela " + tablename);
 
@@ -384,9 +524,9 @@ public class OracleSQLBuilder extends SQLBuilder {
 			for (Field f : classe.getDeclaredFields()) {
 
 				// Busca a coluna na classe
-				Column column = getColumn(f);
+				Column column = this.getColumn(f);
 
-				String columnName = getColumnName(f);
+				String columnName = this.getColumnName(f);
 
 				if (column != null) {
 
@@ -494,7 +634,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 								throw new WrongFieldException("Field " + f.getName() + " do tipo errado, esperado: " + Integer.class.getName() + ", encontrado: " + f.getType().getName() + ", dataType: " + column.dataType(), classe, column);
 							}
 						} else if (column.dataType() == DataType.NUMERIC) {
-							if (dataType != java.sql.Types.NUMERIC) {
+							if (dataType != java.sql.Types.NUMERIC && dataType != java.sql.Types.DECIMAL) {
 								throw new WrongColumnException("Coluna " + columnName + " da tabela " + tablename + " do tipo errado! VO: " + column.dataType() + ", BD: " + dataType, classe, column, f);
 							}
 
@@ -547,7 +687,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void createTable(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String tableName = getTablename(classe);
+		String tableName = this.getTablename(classe);
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("CREATE TABLE " + tableName + " (");
@@ -558,14 +698,14 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 		for (Field f : fields) {
 
-			String columnName = getColumnName(f);
-			Column column = getColumn(f);
+			String columnName = this.getColumnName(f);
+			Column column = this.getColumn(f);
 
 			String columnType = "";
 
 			if (column != null) {
 
-				columnType = getColumnDeclaration(column);
+				columnType = this.getColumnDeclaration(column);
 
 				if (column.isKey()) {
 					sqlPk += columnName + ", ";
@@ -593,7 +733,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 			try {
 				// Confirma se a tabela foi gerada corretamente.
-				tableCheck(classe, manager);
+				this.tableCheck(classe, manager);
 			} catch (TableNotExistsException e) {
 				throw new StatementNotExecutedException("Tabela [" + tableName + "] nao criada!");
 			}
@@ -627,11 +767,11 @@ public class OracleSQLBuilder extends SQLBuilder {
 			columnSize = column.maxSize();
 		} else {
 			if (column.dataType() == DataType.VARCHAR) {
-				columnSize = VARCHAR_SIZE_DEFAULT;
+				columnSize = SQLBuilder.VARCHAR_SIZE_DEFAULT;
 			} else if (column.dataType() == DataType.CHAR || column.dataType() == DataType.DOMAIN_STRING) {
-				columnSize = CHAR_SIZE_DEFAULT;
+				columnSize = SQLBuilder.CHAR_SIZE_DEFAULT;
 			} else if (column.dataType() == DataType.NUMERIC) {
-				columnSize = NUMERIC_DEFAULT_SIZE;
+				columnSize = SQLBuilder.NUMERIC_DEFAULT_SIZE;
 			}
 		}
 
@@ -650,7 +790,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void createSequence(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String sequenceName = getSequenceName(classe);
+		String sequenceName = this.getSequenceName(classe);
 
 		try {
 			if (sequenceName == null) {
@@ -670,16 +810,16 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void alterTable(Class<BaseVo> classe, DAOManager manager, DAOException e) throws DAOException {
-		String tableName = getTablename(classe);
+		String tableName = this.getTablename(classe);
 
 		if (e instanceof WrongColumnException) {
 			WrongColumnException e1 = (WrongColumnException) e;
 
-			String columnName = getColumnName(e1.getField());
-			String columnDeclaration = getColumnDeclaration(e1.getColumn());
+			String columnName = this.getColumnName(e1.getField());
+			String columnDeclaration = this.getColumnDeclaration(e1.getColumn());
 
 			StringBuilder sql = new StringBuilder("ALTER TABLE " + tableName + " ");
-			sql.append(" ALTER " + columnName + " TYPE " + columnDeclaration);
+			sql.append(" MODIFY " + columnName + " " + columnDeclaration);
 
 			Log.debugsql(sql);
 
@@ -696,11 +836,11 @@ public class OracleSQLBuilder extends SQLBuilder {
 		} else if (e instanceof WrongNotNullException) {
 			WrongNotNullException e1 = (WrongNotNullException) e;
 
-			String columnName = getColumnName(e1.getField());
-			String columnDeclaration = getColumnDeclaration(e1.getColumn());
+			String columnName = this.getColumnName(e1.getField());
+			String columnDeclaration = this.getColumnDeclaration(e1.getColumn());
 
 			StringBuilder sql = new StringBuilder("ALTER TABLE " + tableName + " ");
-			sql.append(" ALTER " + columnName + (e1.getColumn().isNotNull() || e1.getColumn().isKey() ? " SET NOT NULL" : " DROP NOT NULL"));
+			sql.append(" MODIFY " + columnName + (e1.getColumn().isNotNull() || e1.getColumn().isKey() ? " SET NOT NULL" : " DROP NOT NULL"));
 
 			Log.debugsql(sql);
 
@@ -716,8 +856,8 @@ public class OracleSQLBuilder extends SQLBuilder {
 		} else if (e instanceof ColumnNotFoundException) {
 			ColumnNotFoundException e1 = (ColumnNotFoundException) e;
 
-			String columnName = getColumnName(e1.getField());
-			String columnDeclaration = getColumnDeclaration(e1.getColumn());
+			String columnName = this.getColumnName(e1.getField());
+			String columnDeclaration = this.getColumnDeclaration(e1.getColumn());
 
 			StringBuilder sql = new StringBuilder("ALTER TABLE " + tableName + " ");
 			sql.append(" ADD " + columnName + " " + columnDeclaration + (e1.getColumn().isNotNull() || e1.getColumn().isKey() ? " NOT NULL" : " NULL"));
@@ -745,7 +885,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	@Override
 	public void dropTable(Class<BaseVo> classe, DAOManager manager) throws DAOException {
-		String tablename = getTablename(classe);
+		String tablename = this.getTablename(classe);
 		String sql = "DROP TABLE " + tablename + " CASCADE CONSTRAINTS";
 
 		Log.debugsql(sql);
@@ -764,12 +904,12 @@ public class OracleSQLBuilder extends SQLBuilder {
 	@Override
 	public void dropSequence(Class<BaseVo> classe, DAOManager manager) throws DAOException {
 		try {
-			sequenceExists(classe, manager);
+			this.sequenceExists(classe, manager);
 		} catch (SequenceNotExistsException e1) {
 			return;
 		}
 
-		String sequenceName = getSequenceName(classe);
+		String sequenceName = this.getSequenceName(classe);
 
 		try {
 			if (sequenceName == null) {
@@ -804,7 +944,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 			if (constraints != null) {
 				for (UniqueConstraint constraint : constraints) {
 
-					ResultSet result = manager.getConnection().getMetaData().getIndexInfo(null, null, getTablename(classe).toUpperCase(), true, true);
+					ResultSet result = manager.getConnection().getMetaData().getIndexInfo(null, null, this.getTablename(classe).toUpperCase(), true, true);
 
 					boolean found = false;
 
@@ -837,7 +977,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 		}
 
 		try {
-			String sql = "ALTER TABLE " + getTablename(classe) + " ADD CONSTRAINT " + constraint.constraintName() + " UNIQUE (";
+			String sql = "ALTER TABLE " + this.getTablename(classe) + " ADD CONSTRAINT " + constraint.constraintName() + " UNIQUE (";
 
 			if (constraint.column() != null && !constraint.column().trim().equals("")) {
 				sql += constraint.column() + ", ";
@@ -894,11 +1034,11 @@ public class OracleSQLBuilder extends SQLBuilder {
 				Join join = f.getAnnotation(Join.class);
 				if (join != null) {
 
-					String tableName = getTablename(classe);
+					String tableName = this.getTablename(classe);
 
-					String tableRemote = getTableNameRemote(f, join);
+					String tableRemote = this.getTableNameRemote(f, join);
 
-					String constraintName = getForeignKeyName(classe, join, f);
+					String constraintName = this.getForeignKeyName(classe, join, f);
 
 					String sql = "SELECT * FROM user_constraints uc WHERE table_name = ? AND constraint_type = 'R' AND constraint_name = ?";
 
@@ -930,7 +1070,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 		String tableRemote = join.tableRemote();
 
 		if (tableRemote == null || tableRemote.trim().equals("")) {
-			tableRemote = getTablename(f.getType());
+			tableRemote = this.getTablename(f.getType());
 		}
 		return tableRemote;
 	}
@@ -938,13 +1078,13 @@ public class OracleSQLBuilder extends SQLBuilder {
 	private String getForeignKeyName(Class<BaseVo> classe, Join join, Field field) throws DAOException {
 		String fk = "fk_";
 
-		fk += getTablename(classe);
+		fk += this.getTablename(classe);
 		fk += "_";
-		fk += getTableNameRemote(field, join);
+		fk += this.getTableNameRemote(field, join);
 
 		// Limite Oracle
 		if (fk.length() > 30) {
-			fk = fk.substring(0, 25) + hashString(fk);
+			fk = fk.substring(0, 25) + this.hashString(fk);
 		}
 
 		return fk;
@@ -954,7 +1094,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 	public void createForeignKey(Class<BaseVo> voClass, Join join, Field field, DAOManager manager) throws DAOException {
 		// TODO Criar chave estrangeira
 
-		String sql = "ALTER TABLE " + getTablename(voClass) + " ADD CONSTRAINT " + getForeignKeyName(voClass, join, field);
+		String sql = "ALTER TABLE " + this.getTablename(voClass) + " ADD CONSTRAINT " + this.getForeignKeyName(voClass, join, field);
 		sql += "  FOREIGN KEY (";
 
 		for (String columnLocal : join.columnsLocal()) {
@@ -964,7 +1104,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 		// Tira a ultima virgula e espaco
 		sql = sql.substring(0, sql.length() - 2);
 
-		sql += ") REFERENCES " + getTableNameRemote(field, join) + " (";
+		sql += ") REFERENCES " + this.getTableNameRemote(field, join) + " (";
 
 		for (String columnRemote : join.columnsRemote()) {
 			sql += columnRemote + ", ";
@@ -996,7 +1136,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Seta os parametros para o insert.
-	 * 
+	 *
 	 * @param prepared
 	 *            PreparedStatement que tem o comando de insert
 	 * @param vo
@@ -1005,12 +1145,13 @@ public class OracleSQLBuilder extends SQLBuilder {
 	 * @throws SQLException
 	 * @throws SQLDaoException
 	 */
+	@Override
 	public void setInsertParameters(PreparedStatement prepared, BaseVo vo, Class<BaseVo> classe, Integer auto) throws SQLException, SQLDaoException {
 
 		int posicao = 0;
 
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 
 			// Setar parametros
 			if (c != null) {
@@ -1059,7 +1200,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 						}
 					} else {
 
-						setNullParameter(prepared, posicao, f, c);
+						this.setNullParameter(prepared, posicao, f, c);
 						// setNullParameter(prepared, posicao, f, c);
 					}
 				}
@@ -1072,6 +1213,8 @@ public class OracleSQLBuilder extends SQLBuilder {
 			prepared.setNull(posicao, java.sql.Types.INTEGER);
 		} else if (f.getType().equals(String.class)) {
 			prepared.setNull(posicao, java.sql.Types.VARCHAR);
+		} else if (f.getType().equals(BigDecimal.class)) {
+			prepared.setNull(posicao, java.sql.Types.DECIMAL);
 		} else if (f.getType().equals(Calendar.class)) {
 			if (c.dataType() == DataType.DATE) {
 				prepared.setNull(posicao, java.sql.Types.DATE);
@@ -1083,7 +1226,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Seta os parametros de uma clausula WHERE, usado para SELECT.
-	 * 
+	 *
 	 * @param prepared
 	 *            java.sql.PreparedStatement com o comando a ser executado
 	 * @param vo
@@ -1105,12 +1248,13 @@ public class OracleSQLBuilder extends SQLBuilder {
 	 * @throws SQLException
 	 * @throws DAOException
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public void setSelectWhereParameters(PreparedStatement prepared, BaseVo vo, Class<BaseVo> classe, boolean keysOnly, String prefix, DaoControle controle, DaoControle posicao) throws SQLException, DAOException {
 		// int posicao = 0;
 
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 			Join join = f.getAnnotation(Join.class);
 
 			// Setar parametros
@@ -1158,7 +1302,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 							// prepared.setNull(posicao.getNumeroInteracoes(),
 							// java.sql.Types.OTHER);
-							setNullParameter(prepared, posicao.getNumeroInteracoes(), f, c);
+							this.setNullParameter(prepared, posicao.getNumeroInteracoes(), f, c);
 						}
 					}
 				}
@@ -1173,9 +1317,9 @@ public class OracleSQLBuilder extends SQLBuilder {
 					if (vo2 != null && !controle.isMaximo()) {
 						controle.incrementaInteracoes();
 
-						String prefix2 = join.tableAlias().equals("") ? getTablename(f.getType()) : join.tableAlias();
+						String prefix2 = join.tableAlias().equals("") ? this.getTablename(f.getType()) : join.tableAlias();
 
-						setSelectWhereParameters(prepared, (BaseVo) vo2, (Class<BaseVo>) vo2.getClass(), false, prefix2, controle, posicao);
+						this.setSelectWhereParameters(prepared, vo2, (Class<BaseVo>) vo2.getClass(), false, prefix2, controle, posicao);
 					}
 				}
 			}
@@ -1184,19 +1328,20 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Seta os parametros de uma clausula WHERE, usado para UPDATE.
-	 * 
+	 *
 	 * @param prepared
 	 *            java.sql.PreparedStatement com o comando a ser executado
 	 * @param vo
 	 *            Objeto com os valores a serem setados
 	 * @throws SQLException
 	 */
+	@Override
 	public void setUpdateParameters(PreparedStatement prepared, BaseVo vo, Class<BaseVo> classe) throws SQLException {
 		int posicao = 0;
 
 		// Passo 1 - Somente os atributos
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 
 			// Setar parametros
 			if (c != null && !c.isKey()) {
@@ -1238,7 +1383,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 						}
 					} else {
 						posicao++;
-						setNullParameter(prepared, posicao, f, c);
+						this.setNullParameter(prepared, posicao, f, c);
 					}
 				}
 			}
@@ -1246,7 +1391,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 		// Passo 2 - Somente os campos chave
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 
 			// Setar parametros
 			if (c != null && c.isKey()) {
@@ -1277,7 +1422,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 						}
 					} else {
 						posicao++;
-						setNullParameter(prepared, posicao, f, c);
+						this.setNullParameter(prepared, posicao, f, c);
 					}
 				}
 			}
@@ -1287,7 +1432,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Seta os parametros de uma clausula WHERE, usado para DELETE.
-	 * 
+	 *
 	 * @param prepared
 	 *            java.sql.PreparedStatement com o comando a ser executado
 	 * @param vo
@@ -1295,11 +1440,12 @@ public class OracleSQLBuilder extends SQLBuilder {
 	 * @param classe
 	 * @throws SQLException
 	 */
+	@Override
 	public void setDeleteParameters(PreparedStatement prepared, BaseVo vo, Class<BaseVo> classe) throws SQLException {
 		int posicao = 0;
 
 		for (Field f : classe.getDeclaredFields()) {
-			Column c = getColumn(f);
+			Column c = this.getColumn(f);
 
 			// Setar parametros
 			if (c != null && c.isKey()) {
@@ -1337,7 +1483,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 						}
 					} else {
 						posicao++;
-						setNullParameter(prepared, posicao, f, c);
+						this.setNullParameter(prepared, posicao, f, c);
 					}
 				}
 			}
@@ -1347,7 +1493,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 	/**
 	 * Converte um java.sql.ResultSet em um VO.
-	 * 
+	 *
 	 * @param vo
 	 *            Objeto que ira receber os dados.
 	 * @param result
@@ -1355,13 +1501,12 @@ public class OracleSQLBuilder extends SQLBuilder {
 	 * @throws DAOException
 	 * @throws SQLException
 	 */
+	@Override
 	public void resultToVo(BaseVo vo, ResultSet result, String prefix, DaoControle controle) throws DAOException {
 
-		Log.info("ResultToVo - " + vo.getClass());
-
 		for (Field f : vo.getClass().getDeclaredFields()) {
-			Column c = getColumn(f);
-			Join j = getJoin(f);
+			Column c = this.getColumn(f);
+			Join j = this.getJoin(f);
 
 			if (c != null) {
 
@@ -1371,9 +1516,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 				// Setter nao pode ser nulo
 				if (setter != null) {
 
-					String columnName = prefix + getColumnName(f);
-
-					// Log.info("Column Name : " + columnName);
+					String columnName = this.colunasMap.get(f).getApelido();
 
 					if (f.getType().equals(Calendar.class)) {
 						if (c.dataType() == DataType.DATETIME) {
@@ -1427,7 +1570,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 					boolean hasNull = false;
 
-					String prefix2 = j.tableAlias().equals("") ? getTablename(f.getType()) : j.tableAlias();
+					String prefix2 = j.tableAlias().equals("") ? this.getTablename(f.getType()) : j.tableAlias();
 
 					for (int i = 0; i < j.columnsRemote().length; i++) {
 						String columnOrigin = j.columnsRemote()[0];
@@ -1462,7 +1605,7 @@ public class OracleSQLBuilder extends SQLBuilder {
 
 							if (!controle.isMaximo()) {
 								controle.incrementaInteracoes();
-								resultToVo((BaseVo) voChild, result, prefix + prefix2 + "_", controle);
+								this.resultToVo((BaseVo) voChild, result, prefix + prefix2 + "_", controle);
 							}
 						}
 					}
