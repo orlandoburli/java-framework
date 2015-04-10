@@ -499,6 +499,9 @@ public class OracleSQLBuilder extends SQLBuilder {
 		try {
 
 			String sequenceName = this.getSequenceName(classe);
+
+			Log.debug("Checando se a sequence " + sequenceName + " existe");
+
 			if (sequenceName == null) {
 				return;
 			}
@@ -761,6 +764,8 @@ public class OracleSQLBuilder extends SQLBuilder {
 			columnType = "NUMERIC";
 		} else if (column.dataType() == DataType.TEXT) {
 			columnType = "CLOB";
+		} else if (column.dataType() == DataType.BYTE) {
+			columnType = "BLOB";
 		}
 
 		if (column.maxSize() > 0) {

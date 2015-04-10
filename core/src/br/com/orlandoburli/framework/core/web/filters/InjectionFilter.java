@@ -13,15 +13,26 @@ import java.util.Locale;
 import br.com.orlandoburli.framework.core.be.validation.annotations.transformation.Precision;
 import br.com.orlandoburli.framework.core.log.Log;
 import br.com.orlandoburli.framework.core.utils.Utils;
+import br.com.orlandoburli.framework.core.web.BaseAction;
 
 /**
  * Filtro para Injecao de atributos
- * 
+ *
  * @author orlandoburli
  */
 public class InjectionFilter extends BaseFilter {
 
 	private static final long serialVersionUID = 1L;
+
+	public InjectionFilter() {
+		//
+	}
+
+	public InjectionFilter(BaseAction action) {
+		this.setRequest(action.getRequest());
+		this.setResponse(action.getResponse());
+		this.setContext(action.getContext());
+	}
 
 	@Override
 	public boolean doFilter(Object vo) throws IllegalArgumentException, IllegalAccessException {
@@ -46,8 +57,8 @@ public class InjectionFilter extends BaseFilter {
 		while (enumSession.hasMoreElements()) {
 			String campo = enumSession.nextElement().toString();
 			Object value = this.getRequest().getSession().getAttribute(campo);
-			setproperty(vo, campo, value); // Seta a propriedade
-											// recursivamente
+			InjectionFilter.setproperty(vo, campo, value); // Seta a propriedade
+			// recursivamente
 		}
 
 		// Injecao pelos dados de parametros de request
@@ -56,7 +67,7 @@ public class InjectionFilter extends BaseFilter {
 			String campo = enumParm.nextElement().toString();
 
 			String value = this.getRequest().getParameter(campo);
-			setproperty(vo, campo, value);
+			InjectionFilter.setproperty(vo, campo, value);
 		}
 
 		// Injecao pelos dados de atributos
@@ -64,8 +75,8 @@ public class InjectionFilter extends BaseFilter {
 		while (enumAtt.hasMoreElements()) {
 			String campo = enumAtt.nextElement().toString();
 			Object value = this.getRequest().getAttribute(campo);
-			setproperty(vo, campo, value); // Seta a propriedade
-											// recursivamente
+			InjectionFilter.setproperty(vo, campo, value); // Seta a propriedade
+			// recursivamente
 		}
 
 		return true;
@@ -89,10 +100,10 @@ public class InjectionFilter extends BaseFilter {
 					found = true;
 					field.setAccessible(true);
 					if (index >= 0) {
-						setproperty(field.get(objeto), property.substring(index + 1), value);
+						InjectionFilter.setproperty(field.get(objeto), property.substring(index + 1), value);
 					} else {
 						// Metodo para setar o valor de acordo com o atributo
-						setField(objeto, field, value);
+						InjectionFilter.setField(objeto, field, value);
 					}
 				}
 			}
@@ -103,12 +114,12 @@ public class InjectionFilter extends BaseFilter {
 						found = true;
 						field.setAccessible(true);
 						if (index >= 0) {
-							setproperty(field.get(objeto), property.substring(index + 1), value);
+							InjectionFilter.setproperty(field.get(objeto), property.substring(index + 1), value);
 						} else {
 							// Metodo para setar o valor de acordo com o
 							// tipo
 							// atributo
-							setField(objeto, field, value);
+							InjectionFilter.setField(objeto, field, value);
 						}
 					}
 				}
@@ -124,7 +135,7 @@ public class InjectionFilter extends BaseFilter {
 
 	/**
 	 * Realiza os setters corretamente tipados
-	 * 
+	 *
 	 * @param container
 	 * @param field
 	 * @param value

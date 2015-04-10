@@ -659,4 +659,12 @@ public final class Utils {
 		return null;
 	}
 
+	public static String append(String funcao, String funcao2) {
+		return null;
+	}
+
+	public static BigDecimal castToBigDecimal(String texto) {
+		return Utils.stringToBigDecimal(texto);
+	}
+
 }
